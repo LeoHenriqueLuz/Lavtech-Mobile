@@ -1,18 +1,11 @@
 import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/theme/theme-provider';
+import { FormField } from '@/components/form-field';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Informe o e-mail').email('E-mail inválido'),
@@ -51,52 +44,23 @@ export default function LoginScreen() {
     >
       <Text style={[theme.typography.title, { color: theme.colors.text }]}>LavTech</Text>
 
-      <View style={styles.field}>
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              placeholder="E-mail"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.textMuted}
-            />
-          )}
-        />
-        {errors.email ? (
-          <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>
-            {errors.email.message}
-          </Text>
-        ) : null}
-      </View>
+      <FormField
+        control={control}
+        name="email"
+        label="E-mail"
+        error={errors.email?.message}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
 
-      <View style={styles.field}>
-        <Controller
-          control={control}
-          name="senha"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              placeholder="Senha"
-              secureTextEntry
-              value={value}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
-              placeholderTextColor={theme.colors.textMuted}
-            />
-          )}
-        />
-        {errors.senha ? (
-          <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>
-            {errors.senha.message}
-          </Text>
-        ) : null}
-      </View>
+      <FormField
+        control={control}
+        name="senha"
+        label="Senha"
+        error={errors.senha?.message}
+        secureTextEntry
+        autoCapitalize="none"
+      />
 
       {erroLogin ? (
         <Text style={[theme.typography.body, { color: theme.colors.danger }]}>{erroLogin}</Text>
@@ -119,16 +83,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
     gap: 16,
-  },
-  field: {
-    gap: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
   },
   button: {
     borderRadius: 8,

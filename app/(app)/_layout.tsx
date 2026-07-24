@@ -17,7 +17,7 @@ export default function AppLayout() {
         headerTintColor: theme.colors.text,
       }}
     >
-      <Tabs.Screen name="clientes/index" options={{ title: 'Clientes' }} />
+      <Tabs.Screen name="clientes" options={{ title: 'Clientes', headerShown: false }} />
       <Tabs.Screen name="ordens-servico/index" options={{ title: 'Ordens de Serviço' }} />
       <Tabs.Screen name="tabela-precos/index" options={{ title: 'Tabela de Preços' }} />
       <Tabs.Screen name="configuracoes/index" options={{ title: 'Configurações' }} />
