@@ -18,7 +18,10 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen name="clientes" options={{ title: 'Clientes', headerShown: false }} />
-      <Tabs.Screen name="ordens-servico/index" options={{ title: 'Ordens de Serviço' }} />
+      <Tabs.Screen
+        name="ordens-servico"
+        options={{ title: 'Ordens de Serviço', headerShown: false }}
+      />
       <Tabs.Screen
         name="tabela-precos"
         options={{ title: 'Tabela de Preços', headerShown: false }}

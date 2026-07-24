@@ -306,31 +306,40 @@ export type Database = {
       }
       ordens_servico_itens: {
         Row: {
+          ajuste_manual: boolean
           created_at: string
           id: string
+          motivo_ajuste: string | null
           ordem_servico_id: string
           persiana_id: string
           quantidade: number
           valor_manutencao_aplicado: number
           valor_unitario_aplicado: number
+          valor_unitario_tabela: number
         }
         Insert: {
+          ajuste_manual?: boolean
           created_at?: string
           id?: string
+          motivo_ajuste?: string | null
           ordem_servico_id: string
           persiana_id: string
           quantidade: number
           valor_manutencao_aplicado?: number
           valor_unitario_aplicado: number
+          valor_unitario_tabela: number
         }
         Update: {
+          ajuste_manual?: boolean
           created_at?: string
           id?: string
+          motivo_ajuste?: string | null
           ordem_servico_id?: string
           persiana_id?: string
           quantidade?: number
           valor_manutencao_aplicado?: number
           valor_unitario_aplicado?: number
+          valor_unitario_tabela?: number
         }
         Relationships: [
           {
