@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { Controller, type Control, type FieldPath, type FieldValues } from 'react-hook-form';
 import { useTheme } from '@/theme/theme-provider';
@@ -28,10 +29,25 @@ export function FormField<T extends FieldValues>({
   secureTextEntry,
 }: FormFieldProps<T>) {
   const theme = useTheme();
+  const [focused, setFocused] = useState(false);
+
+  const borderColor = error
+    ? theme.colors.danger
+    : focused
+      ? theme.colors.primary
+      : theme.colors.border;
 
   return (
     <View style={styles.field}>
-      <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>{label}</Text>
+      <Text
+        style={[
+          theme.typography.caption,
+          styles.label,
+          { color: theme.colors.textMuted },
+        ]}
+      >
+        {label}
+      </Text>
       <Controller
         control={control}
         name={name}
@@ -39,7 +55,9 @@ export function FormField<T extends FieldValues>({
           <TextInput
             value={typeof value === 'string' ? value : ''}
             onChangeText={onChange}
+            onFocus={() => setFocused(true)}
             onBlur={() => {
+              setFocused(false);
               onBlur();
               if (typeof value === 'string') onFieldBlur?.(value);
             }}
@@ -48,10 +66,17 @@ export function FormField<T extends FieldValues>({
             multiline={multiline}
             maxLength={maxLength}
             secureTextEntry={secureTextEntry}
+            placeholderTextColor={theme.colors.textMuted}
             style={[
+              theme.typography.body,
               styles.input,
               multiline && styles.inputMultiline,
-              { borderColor: error ? theme.colors.danger : theme.colors.border, color: theme.colors.text },
+              {
+                borderColor,
+                borderRadius: theme.radii.md,
+                backgroundColor: theme.colors.surface,
+                color: theme.colors.text,
+              },
             ]}
           />
         )}
@@ -65,17 +90,19 @@ export function FormField<T extends FieldValues>({
 
 const styles = StyleSheet.create({
   field: {
-    gap: 4,
+    gap: 6,
+  },
+  label: {
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
   inputMultiline: {
-    minHeight: 80,
+    minHeight: 90,
     textAlignVertical: 'top',
   },
 });

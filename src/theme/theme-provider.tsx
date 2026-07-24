@@ -1,11 +1,13 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { defaultColors, radii, spacing, typography, type Colors } from './tokens';
+import { cardShadow } from './shadows';
 
 interface Theme {
   colors: Colors;
   spacing: typeof spacing;
   radii: typeof radii;
   typography: typeof typography;
+  shadows: { card: typeof cardShadow };
 }
 
 const ThemeContext = createContext<Theme | null>(null);
@@ -23,6 +25,7 @@ export function ThemeProvider({ corPrincipal, children }: ThemeProviderProps) {
       spacing,
       radii,
       typography,
+      shadows: { card: cardShadow },
     }),
     [corPrincipal],
   );

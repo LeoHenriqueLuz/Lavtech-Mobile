@@ -1,12 +1,4 @@
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/theme/theme-provider';
 import { ClienteForm } from '@/features/clientes/cliente-form';
@@ -14,6 +6,8 @@ import { clienteToFormData } from '@/features/clientes/api';
 import type { ClienteFormData } from '@/features/clientes/schema';
 import { useCliente, useSetClienteAtivo, useUpdateCliente } from '@/features/clientes/hooks';
 import { PersianasSection } from '@/features/persianas/persianas-section';
+import { Screen } from '@/components/screen';
+import { AppButton } from '@/components/app-button';
 
 export default function ClienteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -62,49 +56,35 @@ export default function ClienteDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Stack.Screen options={{ title: cliente.nome }} />
-      <ClienteForm
-        defaultValues={clienteToFormData(cliente)}
-        onSubmit={handleSubmit}
-        submitLabel="Salvar alterações"
-      />
-      <PersianasSection clienteId={id} />
-      <TouchableOpacity
-        onPress={handleToggleAtivo}
-        style={[
-          styles.statusButton,
-          { borderColor: cliente.ativo ? theme.colors.danger : theme.colors.success },
-        ]}
-      >
-        <Text
-          style={[
-            theme.typography.body,
-            { color: cliente.ativo ? theme.colors.danger : theme.colors.success },
-          ]}
-        >
-          {cliente.ativo ? 'Desativar cliente' : 'Reativar cliente'}
-        </Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <Screen padded={false}>
+      <ScrollView>
+        <Stack.Screen options={{ title: cliente.nome }} />
+        <ClienteForm
+          defaultValues={clienteToFormData(cliente)}
+          onSubmit={handleSubmit}
+          submitLabel="Salvar alterações"
+        />
+        <PersianasSection clienteId={id} />
+        <View style={styles.footer}>
+          <AppButton
+            label={cliente.ativo ? 'Desativar cliente' : 'Reativar cliente'}
+            onPress={handleToggleAtivo}
+            variant={cliente.ativo ? 'danger' : 'secondary'}
+          />
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statusButton: {
-    margin: 16,
-    marginTop: 0,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
+  footer: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
 });

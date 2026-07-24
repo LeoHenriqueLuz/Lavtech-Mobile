@@ -1,5 +1,6 @@
 import { Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Screen } from '@/components/screen';
 import { ClienteForm } from '@/features/clientes/cliente-form';
 import { clienteFormDefaultValues, type ClienteFormData } from '@/features/clientes/schema';
 import { useCreateCliente } from '@/features/clientes/hooks';
@@ -18,12 +19,14 @@ export default function NovoClienteScreen() {
   }
 
   return (
-    <ScrollView>
-      <ClienteForm
-        defaultValues={clienteFormDefaultValues}
-        onSubmit={handleSubmit}
-        submitLabel="Salvar"
-      />
-    </ScrollView>
+    <Screen padded={false}>
+      <ScrollView>
+        <ClienteForm
+          defaultValues={clienteFormDefaultValues}
+          onSubmit={handleSubmit}
+          submitLabel="Salvar"
+        />
+      </ScrollView>
+    </Screen>
   );
 }

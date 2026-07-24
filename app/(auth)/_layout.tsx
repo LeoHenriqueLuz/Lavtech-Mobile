@@ -5,7 +5,7 @@ export default function AuthLayout() {
   const { session, isLoading } = useSession();
 
   if (isLoading) return null;
-  if (session) return <Redirect href="/(app)/clientes" />;
+  if (session) return <Redirect href="/(app)/dashboard" />;
 
   return <Stack screenOptions={{ headerShown: false }} />;
 }
