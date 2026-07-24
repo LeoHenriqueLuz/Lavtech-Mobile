@@ -5,6 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { FormField } from '@/components/form-field';
 import { Card } from '@/components/card';
 import { AppButton } from '@/components/app-button';
+import { QuantityStepper } from '@/components/quantity-stepper';
 import { useTheme } from '@/theme/theme-provider';
 import { useCatalogo } from '@/features/catalogos/hooks';
 import { persianaSchema, type PersianaFormData } from './schema';
@@ -63,8 +64,9 @@ export function PersianaForm({
               <Picker
                 selectedValue={value}
                 onValueChange={onChange}
-                style={{ color: theme.colors.text }}
+                style={{ color: theme.colors.text, backgroundColor: theme.colors.surface }}
                 dropdownIconColor={theme.colors.textMuted}
+                itemStyle={{ color: theme.colors.text }}
               >
                 <Picker.Item label="Selecione" value="" />
                 {ambientes?.map((item) => (
@@ -108,8 +110,9 @@ export function PersianaForm({
               <Picker
                 selectedValue={value}
                 onValueChange={onChange}
-                style={{ color: theme.colors.text }}
+                style={{ color: theme.colors.text, backgroundColor: theme.colors.surface }}
                 dropdownIconColor={theme.colors.textMuted}
+                itemStyle={{ color: theme.colors.text }}
               >
                 <Picker.Item label="Selecione" value="" />
                 {tipos?.map((item) => (
@@ -126,13 +129,29 @@ export function PersianaForm({
         ) : null}
       </View>
 
-      <FormField
-        control={control}
-        name="quantidade"
-        label="Quantidade"
-        error={errors.quantidade?.message}
-        keyboardType="numeric"
-      />
+      <View style={styles.field}>
+        <Text
+          style={[
+            theme.typography.caption,
+            styles.pickerLabel,
+            { color: theme.colors.textMuted },
+          ]}
+        >
+          Quantidade
+        </Text>
+        <Controller
+          control={control}
+          name="quantidade"
+          render={({ field: { onChange, value } }) => (
+            <QuantityStepper value={value} onChange={onChange} />
+          )}
+        />
+        {errors.quantidade ? (
+          <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>
+            {errors.quantidade.message}
+          </Text>
+        ) : null}
+      </View>
       <FormField
         control={control}
         name="observacoes"

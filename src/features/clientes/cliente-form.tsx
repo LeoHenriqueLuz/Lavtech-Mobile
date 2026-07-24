@@ -144,8 +144,9 @@ export function ClienteForm({ defaultValues, onSubmit, submitLabel }: ClienteFor
                   <Picker
                     selectedValue={value}
                     onValueChange={onChange}
-                    style={{ color: theme.colors.text }}
+                    style={{ color: theme.colors.text, backgroundColor: theme.colors.surface }}
                     dropdownIconColor={theme.colors.textMuted}
+                    itemStyle={{ color: theme.colors.text }}
                   >
                     <Picker.Item label="UF" value="" />
                     {ESTADOS_BR.map((estado) => (

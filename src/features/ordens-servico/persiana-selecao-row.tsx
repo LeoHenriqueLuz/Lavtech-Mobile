@@ -1,6 +1,7 @@
-import { StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { Card } from '@/components/card';
+import { QuantityStepper } from '@/components/quantity-stepper';
 import { formatCurrency } from '@/utils/format-currency';
 import type { PersianaComNomes } from '@/features/persianas/api';
 
@@ -55,20 +56,7 @@ export function PersianaSelecaoRow({
         <View style={styles.details}>
           <View style={styles.quantidadeField}>
             <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>Qtd.</Text>
-            <TextInput
-              value={quantidade}
-              onChangeText={onChangeQuantidade}
-              keyboardType="numeric"
-              style={[
-                styles.quantidadeInput,
-                {
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.surface,
-                  color: theme.colors.text,
-                  borderRadius: theme.radii.sm,
-                },
-              ]}
-            />
+            <QuantityStepper value={quantidade} onChange={onChangeQuantidade} />
           </View>
           <TouchableOpacity onPress={onEditarValor} style={styles.valorButton}>
             <Text style={[theme.typography.body, { color: theme.colors.text }]}>
@@ -104,14 +92,7 @@ const styles = StyleSheet.create({
     paddingLeft: 52,
   },
   quantidadeField: {
-    width: 70,
     gap: 2,
-  },
-  quantidadeInput: {
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    fontSize: 14,
   },
   valorButton: {
     alignItems: 'flex-end',
