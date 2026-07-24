@@ -1,10 +1,19 @@
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/theme/theme-provider';
 import { ClienteForm } from '@/features/clientes/cliente-form';
 import { clienteToFormData } from '@/features/clientes/api';
 import type { ClienteFormData } from '@/features/clientes/schema';
 import { useCliente, useSetClienteAtivo, useUpdateCliente } from '@/features/clientes/hooks';
+import { PersianasSection } from '@/features/persianas/persianas-section';
 
 export default function ClienteDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,13 +62,14 @@ export default function ClienteDetailScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Stack.Screen options={{ title: cliente.nome }} />
       <ClienteForm
         defaultValues={clienteToFormData(cliente)}
         onSubmit={handleSubmit}
         submitLabel="Salvar alterações"
       />
+      <PersianasSection clienteId={id} />
       <TouchableOpacity
         onPress={handleToggleAtivo}
         style={[
@@ -76,7 +86,7 @@ export default function ClienteDetailScreen() {
           {cliente.ativo ? 'Desativar cliente' : 'Reativar cliente'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 

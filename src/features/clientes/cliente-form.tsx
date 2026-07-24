@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { FormField } from '@/components/form-field';
 import { useTheme } from '@/theme/theme-provider';
@@ -41,10 +41,7 @@ export function ClienteForm({ defaultValues, onSubmit, submitLabel }: ClienteFor
   }
 
   return (
-    <ScrollView
-      style={[styles.scroll, { backgroundColor: theme.colors.background }]}
-      contentContainerStyle={styles.container}
-    >
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Dados</Text>
       <FormField control={control} name="nome" label="Nome *" error={errors.nome?.message} />
       <FormField
@@ -148,14 +145,11 @@ export function ClienteForm({ defaultValues, onSubmit, submitLabel }: ClienteFor
       >
         <Text style={styles.buttonText}>{isSubmitting ? 'Salvando...' : submitLabel}</Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-  },
   container: {
     padding: 16,
     gap: 12,

@@ -1,4 +1,4 @@
-import { Alert } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ClienteForm } from '@/features/clientes/cliente-form';
 import { clienteFormDefaultValues, type ClienteFormData } from '@/features/clientes/schema';
@@ -18,10 +18,12 @@ export default function NovoClienteScreen() {
   }
 
   return (
-    <ClienteForm
-      defaultValues={clienteFormDefaultValues}
-      onSubmit={handleSubmit}
-      submitLabel="Salvar"
-    />
+    <ScrollView>
+      <ClienteForm
+        defaultValues={clienteFormDefaultValues}
+        onSubmit={handleSubmit}
+        submitLabel="Salvar"
+      />
+    </ScrollView>
   );
 }
