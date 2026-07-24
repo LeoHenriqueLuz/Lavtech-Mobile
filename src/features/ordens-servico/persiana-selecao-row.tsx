@@ -3,7 +3,7 @@ import { useTheme } from '@/theme/theme-provider';
 import { Card } from '@/components/card';
 import { QuantityStepper } from '@/components/quantity-stepper';
 import { formatCurrency } from '@/utils/format-currency';
-import type { PersianaComNomes } from '@/features/persianas/api';
+import { formatAmbiente, type PersianaComNomes } from '@/features/persianas/api';
 
 interface PersianaSelecaoRowProps {
   persiana: PersianaComNomes;
@@ -42,7 +42,8 @@ export function PersianaSelecaoRow({
         />
         <View style={styles.info}>
           <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-            {persiana.ambiente?.nome ?? '—'} · {persiana.tipo?.nome ?? '—'}
+            {formatAmbiente(persiana.ambiente?.nome, persiana.ambiente_outro_descricao)} ·{' '}
+            {persiana.tipo?.nome ?? '—'}
           </Text>
           {semPreco ? (
             <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>

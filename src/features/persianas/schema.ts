@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const persianaSchema = z.object({
   ambienteId: z.string().min(1, 'Selecione o ambiente'),
+  ambienteOutroDescricao: z.string().optional(),
   tipoId: z.string().min(1, 'Selecione o tipo'),
   quantidade: z
     .string()
@@ -15,6 +16,7 @@ export type PersianaFormData = z.infer<typeof persianaSchema>;
 
 export const persianaFormDefaultValues: PersianaFormData = {
   ambienteId: '',
+  ambienteOutroDescricao: '',
   tipoId: '',
   quantidade: '1',
   observacoes: '',

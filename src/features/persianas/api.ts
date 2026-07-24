@@ -39,6 +39,7 @@ function toPersianaInput(
   return {
     cliente_id: clienteId,
     ambiente_id: form.ambienteId,
+    ambiente_outro_descricao: form.ambienteOutroDescricao || null,
     tipo_id: form.tipoId,
     quantidade: Number(form.quantidade),
     observacoes: form.observacoes || null,
@@ -84,8 +85,19 @@ export async function setPersianaAtivo(id: string, ativo: boolean): Promise<Pers
 export function persianaToFormData(persiana: Persiana): PersianaFormData {
   return {
     ambienteId: persiana.ambiente_id,
+    ambienteOutroDescricao: persiana.ambiente_outro_descricao ?? '',
     tipoId: persiana.tipo_id,
     quantidade: String(persiana.quantidade),
     observacoes: persiana.observacoes ?? '',
   };
+}
+
+/** "Outro" não tem valor próprio — mostra a descrição livre no lugar do nome do catálogo. */
+export function formatAmbiente(
+  nome: string | undefined,
+  descricaoOutro: string | null | undefined,
+): string {
+  if (!nome) return '—';
+  if (nome === 'Outro' && descricaoOutro) return descricaoOutro;
+  return nome;
 }

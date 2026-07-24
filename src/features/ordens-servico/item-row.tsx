@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { Card } from '@/components/card';
 import { formatCurrency } from '@/utils/format-currency';
+import { formatAmbiente } from '@/features/persianas/api';
 import type { ItemComPersiana } from './api';
 
 interface ItemRowProps {
@@ -17,7 +18,8 @@ export function ItemRow({ item, onPress }: ItemRowProps) {
       <Card style={styles.container}>
         <View style={styles.headerRow}>
           <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-            {item.persiana?.ambiente?.nome ?? '—'} · {item.persiana?.tipo?.nome ?? '—'}
+            {formatAmbiente(item.persiana?.ambiente?.nome, item.persiana?.ambiente_outro_descricao)}{' '}
+            · {item.persiana?.tipo?.nome ?? '—'}
           </Text>
           <Text style={[theme.typography.body, { color: theme.colors.text }]}>
             {formatCurrency(item.valor_unitario_aplicado)}

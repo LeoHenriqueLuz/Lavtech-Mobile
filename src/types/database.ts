@@ -361,6 +361,7 @@ export type Database = {
       persianas: {
         Row: {
           ambiente_id: string
+          ambiente_outro_descricao: string | null
           ativo: boolean
           cliente_id: string
           created_at: string
@@ -372,6 +373,7 @@ export type Database = {
         }
         Insert: {
           ambiente_id: string
+          ambiente_outro_descricao?: string | null
           ativo?: boolean
           cliente_id: string
           created_at?: string
@@ -383,6 +385,7 @@ export type Database = {
         }
         Update: {
           ambiente_id?: string
+          ambiente_outro_descricao?: string | null
           ativo?: boolean
           cliente_id?: string
           created_at?: string

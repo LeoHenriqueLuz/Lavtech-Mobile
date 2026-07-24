@@ -16,6 +16,7 @@ export interface ItemComPersiana extends OrdemServicoItem {
   persiana: {
     id: string;
     quantidade: number;
+    ambiente_outro_descricao: string | null;
     ambiente: { nome: string } | null;
     tipo: { nome: string } | null;
   } | null;
@@ -68,7 +69,7 @@ export async function getOrdemServico(id: string): Promise<OrdemServicoDetalhe> 
   const { data: itens, error: itensError } = await supabase
     .from('ordens_servico_itens')
     .select(
-      '*, persiana:persianas(id, quantidade, ambiente:ambientes(nome), tipo:tipos_persiana(nome))',
+      '*, persiana:persianas(id, quantidade, ambiente_outro_descricao, ambiente:ambientes(nome), tipo:tipos_persiana(nome))',
     )
     .eq('ordem_servico_id', id)
     .order('created_at', { ascending: true });

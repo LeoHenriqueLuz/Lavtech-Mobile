@@ -1,4 +1,4 @@
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { StyleSheet, Text, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
@@ -29,11 +29,26 @@ export function PersianaForm({
   const {
     control,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<PersianaFormData>({
     resolver: zodResolver(persianaSchema),
     defaultValues,
   });
+
+  const ambienteIdSelecionado = useWatch({ control, name: 'ambienteId' });
+  const isOutro = ambientes?.find((item) => item.id === ambienteIdSelecionado)?.nome === 'Outro';
+
+  async function handleFormSubmit(data: PersianaFormData) {
+    if (isOutro && !data.ambienteOutroDescricao?.trim()) {
+      setError('ambienteOutroDescricao', {
+        type: 'manual',
+        message: 'Descreva o ambiente',
+      });
+      return;
+    }
+    await onSubmit(data);
+  }
 
   return (
     <Card style={styles.container}>
@@ -82,6 +97,15 @@ export function PersianaForm({
           </Text>
         ) : null}
       </View>
+
+      {isOutro ? (
+        <FormField
+          control={control}
+          name="ambienteOutroDescricao"
+          label="Descreva o ambiente"
+          error={errors.ambienteOutroDescricao?.message}
+        />
+      ) : null}
 
       <View style={styles.field}>
         <Text
@@ -164,7 +188,7 @@ export function PersianaForm({
         <AppButton label="Cancelar" onPress={onCancel} variant="secondary" style={styles.flex} />
         <AppButton
           label={isSubmitting ? 'Salvando...' : submitLabel}
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(handleFormSubmit)}
           disabled={isSubmitting}
           style={styles.flex}
         />

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { Card } from '@/components/card';
-import type { PersianaComNomes } from './api';
+import { formatAmbiente, type PersianaComNomes } from './api';
 
 interface PersianaListItemProps {
   persiana: PersianaComNomes;
@@ -27,7 +27,8 @@ export function PersianaListItem({ persiana, onPress }: PersianaListItemProps) {
         </View>
         <View style={styles.info}>
           <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-            {persiana.ambiente?.nome ?? '—'} · {persiana.tipo?.nome ?? '—'}
+            {formatAmbiente(persiana.ambiente?.nome, persiana.ambiente_outro_descricao)} ·{' '}
+            {persiana.tipo?.nome ?? '—'}
           </Text>
           <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
             Quantidade: {persiana.quantidade}
