@@ -23,6 +23,12 @@ export async function listItens(
   return data;
 }
 
+export async function getItem(tabela: CatalogoTabela, id: string): Promise<ItemCatalogo> {
+  const { data, error } = await supabase.from(tabela).select('*').eq('id', id).single();
+  if (error) throw error;
+  return data;
+}
+
 export async function createItem(tabela: CatalogoTabela, nome: string): Promise<ItemCatalogo> {
   const { data, error } = await supabase.from(tabela).insert({ nome }).select().single();
   if (error) throw error;

@@ -9,6 +9,14 @@ export function useCatalogo(tabela: CatalogoTabela, includeInactive = false) {
   });
 }
 
+export function useCatalogoItem(tabela: CatalogoTabela, id: string) {
+  return useQuery({
+    queryKey: ['catalogo-item', tabela, id],
+    queryFn: () => api.getItem(tabela, id),
+    enabled: Boolean(id),
+  });
+}
+
 export function useCreateItemCatalogo(tabela: CatalogoTabela) {
   const queryClient = useQueryClient();
   return useMutation({
