@@ -1,8 +1,11 @@
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Tag } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { usePrecosVigentes } from '@/features/tabela-precos/hooks';
 import { formatCurrency } from '@/utils/format-currency';
+import { Screen } from '@/components/screen';
+import { Card } from '@/components/card';
 
 export default function TabelaPrecosScreen() {
   const theme = useTheme();
@@ -10,7 +13,7 @@ export default function TabelaPrecosScreen() {
   const { data: tipos, isLoading, error } = usePrecosVigentes();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <Screen>
       {error ? (
         <Text style={[theme.typography.body, styles.empty, { color: theme.colors.danger }]}>
           Não foi possível carregar a tabela de preços.
@@ -21,22 +24,32 @@ export default function TabelaPrecosScreen() {
         <FlatList
           data={tipos}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => router.push(`/tabela-precos/${item.id}`)}
-              style={[styles.row, { borderColor: theme.colors.border }]}
-            >
-              <Text style={[theme.typography.body, { color: theme.colors.text }]}>{item.nome}</Text>
-              <Text
-                style={[
-                  theme.typography.body,
-                  { color: item.precoVigente ? theme.colors.text : theme.colors.textMuted },
-                ]}
-              >
-                {item.precoVigente
-                  ? formatCurrency(item.precoVigente.valor_unitario)
-                  : 'Sem preço definido'}
-              </Text>
+            <TouchableOpacity onPress={() => router.push(`/tabela-precos/${item.id}`)}>
+              <Card style={styles.row}>
+                <View
+                  style={[
+                    styles.icon,
+                    { backgroundColor: `${theme.colors.primary}26`, borderRadius: theme.radii.full },
+                  ]}
+                >
+                  <Tag color={theme.colors.primary} size={18} />
+                </View>
+                <Text style={[theme.typography.body, styles.name, { color: theme.colors.text }]}>
+                  {item.nome}
+                </Text>
+                <Text
+                  style={[
+                    theme.typography.body,
+                    { color: item.precoVigente ? theme.colors.text : theme.colors.textMuted },
+                  ]}
+                >
+                  {item.precoVigente
+                    ? formatCurrency(item.precoVigente.valor_unitario)
+                    : 'Sem preço'}
+                </Text>
+              </Card>
             </TouchableOpacity>
           )}
           ListEmptyComponent={
@@ -46,21 +59,28 @@ export default function TabelaPrecosScreen() {
           }
         />
       )}
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  listContent: {
+    gap: 12,
+    paddingBottom: 24,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
+    gap: 12,
+  },
+  icon: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  name: {
+    flex: 1,
   },
   loading: {
     marginTop: 32,

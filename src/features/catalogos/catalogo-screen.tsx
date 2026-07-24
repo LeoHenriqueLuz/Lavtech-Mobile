@@ -1,16 +1,10 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Switch, Text, TextInput } from 'react-native';
 import { Stack } from 'expo-router';
 import { useTheme } from '@/theme/theme-provider';
+import { Card } from '@/components/card';
+import { AppButton } from '@/components/app-button';
+import { Screen } from '@/components/screen';
 import { useCatalogo, useCreateItemCatalogo, useSetItemCatalogoAtivo } from './hooks';
 import type { CatalogoTabela } from './api';
 
@@ -34,27 +28,32 @@ export function CatalogoScreen({ tabela, titulo }: CatalogoScreenProps) {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <Screen>
       <Stack.Screen options={{ title: titulo }} />
-      <View style={styles.addRow}>
+      <Card style={styles.addRow}>
         <TextInput
           value={novoNome}
           onChangeText={setNovoNome}
           placeholder="Novo item"
           placeholderTextColor={theme.colors.textMuted}
-          style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
+          style={[
+            theme.typography.body,
+            styles.input,
+            {
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.surface,
+              color: theme.colors.text,
+              borderRadius: theme.radii.md,
+            },
+          ]}
         />
-        <TouchableOpacity
+        <AppButton
+          label="Adicionar"
           onPress={handleAdicionar}
           disabled={createItem.isPending}
-          style={[
-            styles.addButton,
-            { backgroundColor: theme.colors.primary, opacity: createItem.isPending ? 0.6 : 1 },
-          ]}
-        >
-          <Text style={styles.addButtonText}>Adicionar</Text>
-        </TouchableOpacity>
-      </View>
+          style={styles.addButton}
+        />
+      </Card>
 
       {error ? (
         <Text style={[theme.typography.body, styles.empty, { color: theme.colors.danger }]}>
@@ -66,8 +65,9 @@ export function CatalogoScreen({ tabela, titulo }: CatalogoScreenProps) {
         <FlatList
           data={itens}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <View style={[styles.row, { borderColor: theme.colors.border }]}>
+            <Card style={styles.row}>
               <Text
                 style={[
                   theme.typography.body,
@@ -79,8 +79,9 @@ export function CatalogoScreen({ tabela, titulo }: CatalogoScreenProps) {
               <Switch
                 value={item.ativo}
                 onValueChange={(ativo) => setAtivo.mutate({ id: item.id, ativo })}
+                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               />
-            </View>
+            </Card>
           )}
           ListEmptyComponent={
             <Text style={[theme.typography.body, styles.empty, { color: theme.colors.textMuted }]}>
@@ -89,43 +90,33 @@ export function CatalogoScreen({ tabela, titulo }: CatalogoScreenProps) {
           }
         />
       )}
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   addRow: {
     flexDirection: 'row',
     gap: 8,
-    padding: 16,
+    marginBottom: 16,
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 14,
   },
   addButton: {
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  listContent: {
+    gap: 12,
+    paddingBottom: 24,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
   },
   loading: {
     marginTop: 32,

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
+import { Card } from '@/components/card';
 import { formatCurrency } from '@/utils/format-currency';
 import type { ItemComPersiana } from './api';
 
@@ -12,47 +13,43 @@ export function ItemRow({ item, onPress }: ItemRowProps) {
   const theme = useTheme();
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.container, { borderColor: theme.colors.border }]}
-    >
-      <View style={styles.headerRow}>
-        <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-          {item.persiana?.ambiente?.nome ?? '—'} · {item.persiana?.tipo?.nome ?? '—'}
-        </Text>
-        <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-          {formatCurrency(item.valor_unitario_aplicado)}
-        </Text>
-      </View>
-      <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-        Quantidade: {item.quantidade}
-      </Text>
-
-      {item.ajuste_manual ? (
-        <View style={styles.ajusteBox}>
-          <Text style={[theme.typography.caption, { color: theme.colors.warning }]}>
-            ⚠ Valor ajustado manualmente
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Card style={styles.container}>
+        <View style={styles.headerRow}>
+          <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+            {item.persiana?.ambiente?.nome ?? '—'} · {item.persiana?.tipo?.nome ?? '—'}
           </Text>
-          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-            Valor padrão: {formatCurrency(item.valor_unitario_tabela)}
-          </Text>
-          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-            Valor aplicado: {formatCurrency(item.valor_unitario_aplicado)}
-          </Text>
-          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-            Motivo: {item.motivo_ajuste}
+          <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+            {formatCurrency(item.valor_unitario_aplicado)}
           </Text>
         </View>
-      ) : null}
+        <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+          Quantidade: {item.quantidade}
+        </Text>
+
+        {item.ajuste_manual ? (
+          <View style={styles.ajusteBox}>
+            <Text style={[theme.typography.caption, { color: theme.colors.warning }]}>
+              ⚠ Valor ajustado manualmente
+            </Text>
+            <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+              Valor padrão: {formatCurrency(item.valor_unitario_tabela)}
+            </Text>
+            <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+              Valor aplicado: {formatCurrency(item.valor_unitario_aplicado)}
+            </Text>
+            <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+              Motivo: {item.motivo_ajuste}
+            </Text>
+          </View>
+        ) : null}
+      </Card>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
     gap: 4,
   },
   headerRow: {

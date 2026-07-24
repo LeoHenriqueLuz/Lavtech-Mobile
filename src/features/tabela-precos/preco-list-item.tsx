@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
+import { Card } from '@/components/card';
 import { formatCurrency } from '@/utils/format-currency';
 import { formatDate } from '@/utils/format-date';
 import type { Preco } from './api';
@@ -12,7 +13,7 @@ export function PrecoListItem({ preco }: PrecoListItemProps) {
   const theme = useTheme();
 
   return (
-    <View style={[styles.container, { borderColor: theme.colors.border }]}>
+    <Card style={styles.card}>
       <View style={styles.info}>
         <Text style={[theme.typography.body, { color: theme.colors.text }]}>
           {formatCurrency(preco.valor_unitario)}
@@ -31,22 +32,20 @@ export function PrecoListItem({ preco }: PrecoListItemProps) {
             { backgroundColor: theme.colors.surface, borderRadius: theme.radii.full },
           ]}
         >
-          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>Inativo</Text>
+          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+            Inativo
+          </Text>
         </View>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: 8,
   },
   info: {
     gap: 2,

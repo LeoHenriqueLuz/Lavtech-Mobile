@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, View } from 'react-native';
 import { FormField } from '@/components/form-field';
+import { AppButton } from '@/components/app-button';
 import { useTheme } from '@/theme/theme-provider';
 import { formatCurrency } from '@/utils/format-currency';
 import { ajusteValorSchema, type AjusteValorFormData } from './schema';
@@ -44,8 +45,19 @@ export function EditarValorModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancelar}>
       <View style={styles.overlay}>
-        <View style={[styles.card, { backgroundColor: theme.colors.background }]}>
-          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Editar valor</Text>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.surfaceElevated,
+              borderColor: theme.colors.border,
+              borderRadius: theme.radii.lg,
+            },
+          ]}
+        >
+          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+            Editar valor
+          </Text>
 
           <View style={styles.field}>
             <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
@@ -72,19 +84,18 @@ export function EditarValorModal({
           />
 
           <View style={styles.actions}>
-            <TouchableOpacity onPress={onCancelar} style={styles.cancelButton}>
-              <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            <AppButton
+              label="Cancelar"
+              onPress={onCancelar}
+              variant="secondary"
+              style={styles.flex}
+            />
+            <AppButton
+              label={isSubmitting ? 'Salvando...' : 'Salvar'}
               onPress={handleSubmit(onSalvar)}
               disabled={isSubmitting}
-              style={[
-                styles.submitButton,
-                { backgroundColor: theme.colors.primary, opacity: isSubmitting ? 0.6 : 1 },
-              ]}
-            >
-              <Text style={styles.submitButtonText}>{isSubmitting ? 'Salvando...' : 'Salvar'}</Text>
-            </TouchableOpacity>
+              style={styles.flex}
+            />
           </View>
         </View>
       </View>
@@ -95,12 +106,12 @@ export function EditarValorModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     padding: 24,
   },
   card: {
-    borderRadius: 12,
+    borderWidth: 1,
     padding: 20,
     gap: 12,
   },
@@ -109,21 +120,10 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     gap: 12,
     marginTop: 8,
   },
-  cancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-  },
-  submitButton: {
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-  },
-  submitButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  flex: {
+    flex: 1,
   },
 });

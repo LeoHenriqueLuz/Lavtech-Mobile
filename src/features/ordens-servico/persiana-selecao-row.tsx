@@ -1,5 +1,6 @@
 import { StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
+import { Card } from '@/components/card';
 import { formatCurrency } from '@/utils/format-currency';
 import type { PersianaComNomes } from '@/features/persianas/api';
 
@@ -30,9 +31,14 @@ export function PersianaSelecaoRow({
   const semPreco = precoVigente === null;
 
   return (
-    <View style={[styles.container, { borderColor: theme.colors.border }]}>
+    <Card style={styles.container}>
       <View style={styles.header}>
-        <Switch value={selecionada} onValueChange={onToggleSelecionar} disabled={semPreco} />
+        <Switch
+          value={selecionada}
+          onValueChange={onToggleSelecionar}
+          disabled={semPreco}
+          trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+        />
         <View style={styles.info}>
           <Text style={[theme.typography.body, { color: theme.colors.text }]}>
             {persiana.ambiente?.nome ?? '—'} · {persiana.tipo?.nome ?? '—'}
@@ -55,7 +61,12 @@ export function PersianaSelecaoRow({
               keyboardType="numeric"
               style={[
                 styles.quantidadeInput,
-                { borderColor: theme.colors.border, color: theme.colors.text },
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.surface,
+                  color: theme.colors.text,
+                  borderRadius: theme.radii.sm,
+                },
               ]}
             />
           </View>
@@ -69,15 +80,12 @@ export function PersianaSelecaoRow({
           </TouchableOpacity>
         </View>
       ) : null}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
     gap: 8,
   },
   header: {
@@ -101,7 +109,6 @@ const styles = StyleSheet.create({
   },
   quantidadeInput: {
     borderWidth: 1,
-    borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
     fontSize: 14,

@@ -59,7 +59,11 @@ export default function HistoricoPrecoScreen() {
         </Text>
         {!addingNew ? (
           <TouchableOpacity onPress={() => setAddingNew(true)}>
-            <Text style={[theme.typography.body, { color: theme.colors.primary }]}>+ Novo preço</Text>
+            <Text
+              style={[theme.typography.body, { color: theme.colors.primary, fontWeight: '600' }]}
+            >
+              + Novo preço
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -124,7 +128,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: 16,
-    gap: 8,
+    gap: 12,
   },
   itemWrapper: {
     gap: 4,

@@ -1,8 +1,13 @@
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { Plus } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { useOrdensServico } from '@/features/ordens-servico/hooks';
+import { StatusBadge } from '@/features/ordens-servico/status-badge';
+import type { StatusOS } from '@/features/ordens-servico/status';
 import { formatCurrency } from '@/utils/format-currency';
+import { Screen } from '@/components/screen';
+import { Card } from '@/components/card';
 
 export default function OrdensServicoScreen() {
   const theme = useTheme();
@@ -10,16 +15,13 @@ export default function OrdensServicoScreen() {
   const { data: ordens, isLoading, error } = useOrdensServico();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <Screen>
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Text
-              onPress={() => router.push('/ordens-servico/novo')}
-              style={[styles.addButton, { color: theme.colors.primary }]}
-            >
-              + Nova
-            </Text>
+            <TouchableOpacity onPress={() => router.push('/ordens-servico/novo')} hitSlop={8}>
+              <Plus color={theme.colors.primary} size={22} />
+            </TouchableOpacity>
           ),
         }}
       />
@@ -34,22 +36,23 @@ export default function OrdensServicoScreen() {
         <FlatList
           data={ordens}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => router.push(`/ordens-servico/${item.id}`)}
-              style={[styles.row, { borderColor: theme.colors.border }]}
-            >
-              <View>
-                <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-                  {item.numero}
-                </Text>
-                <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-                  {item.cliente?.nome ?? 'Cliente removido'} · {item.status}
-                </Text>
-              </View>
-              <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-                {formatCurrency(item.valor_final)}
-              </Text>
+            <TouchableOpacity onPress={() => router.push(`/ordens-servico/${item.id}`)}>
+              <Card style={styles.row}>
+                <View style={styles.info}>
+                  <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+                    {item.numero}
+                  </Text>
+                  <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+                    {item.cliente?.nome ?? 'Cliente removido'}
+                  </Text>
+                  <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+                    {formatCurrency(item.valor_final)}
+                  </Text>
+                </View>
+                <StatusBadge status={item.status as StatusOS} />
+              </Card>
             </TouchableOpacity>
           )}
           ListEmptyComponent={
@@ -59,26 +62,23 @@ export default function OrdensServicoScreen() {
           }
         />
       )}
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  listContent: {
+    gap: 12,
+    paddingBottom: 24,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
+    gap: 12,
   },
-  addButton: {
-    fontSize: 14,
-    fontWeight: '600',
-    paddingHorizontal: 8,
+  info: {
+    gap: 2,
   },
   loading: {
     marginTop: 32,

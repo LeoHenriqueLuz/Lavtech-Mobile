@@ -28,6 +28,9 @@ import {
   type OrdemServicoFormData,
 } from '@/features/ordens-servico/schema';
 import { FormField } from '@/components/form-field';
+import { Card } from '@/components/card';
+import { AppButton } from '@/components/app-button';
+import { Screen } from '@/components/screen';
 import { PersianaSelecaoRow } from '@/features/ordens-servico/persiana-selecao-row';
 import { EditarValorModal } from '@/features/ordens-servico/editar-valor-modal';
 
@@ -166,33 +169,42 @@ export default function NovaOrdemServicoScreen() {
 
   if (!cliente) {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <Screen>
         <TextInput
           value={buscaCliente}
           onChangeText={setBuscaCliente}
           placeholder="Buscar cliente por nome, WhatsApp ou e-mail"
           placeholderTextColor={theme.colors.textMuted}
-          style={[styles.search, { borderColor: theme.colors.border, color: theme.colors.text }]}
+          style={[
+            theme.typography.body,
+            styles.search,
+            {
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.surface,
+              color: theme.colors.text,
+              borderRadius: theme.radii.md,
+            },
+          ]}
         />
         {carregandoClientes ? (
           <ActivityIndicator style={styles.loading} color={theme.colors.primary} />
         ) : (
-          <ScrollView>
+          <ScrollView contentContainerStyle={styles.clienteList}>
             {clientesEncontrados?.map((c) => (
-              <TouchableOpacity
-                key={c.id}
-                onPress={() => setCliente(c)}
-                style={[styles.clienteRow, { borderColor: theme.colors.border }]}
-              >
-                <Text style={[theme.typography.body, { color: theme.colors.text }]}>{c.nome}</Text>
-                <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-                  {c.whatsapp}
-                </Text>
+              <TouchableOpacity key={c.id} onPress={() => setCliente(c)}>
+                <Card>
+                  <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+                    {c.nome}
+                  </Text>
+                  <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+                    {c.whatsapp}
+                  </Text>
+                </Card>
               </TouchableOpacity>
             ))}
           </ScrollView>
         )}
-      </View>
+      </Screen>
     );
   }
 
@@ -206,116 +218,108 @@ export default function NovaOrdemServicoScreen() {
 
   if (ordemAberta) {
     return (
-      <View
-        style={[styles.container, styles.avisoContainer, { backgroundColor: theme.colors.background }]}
-      >
-        <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
-          {cliente.nome} já possui uma ordem de serviço em aberto
-        </Text>
-        <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-          Finalize ou cancele a {ordemAberta.numero} antes de criar uma nova para este cliente.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push(`/ordens-servico/${ordemAberta.id}`)}
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        >
-          <Text style={styles.buttonText}>Abrir {ordemAberta.numero}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setCliente(null)}>
-          <Text style={[theme.typography.body, { color: theme.colors.primary }]}>Trocar cliente</Text>
-        </TouchableOpacity>
-      </View>
+      <Screen>
+        <View style={styles.avisoContainer}>
+          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+            {cliente.nome} já possui uma ordem de serviço em aberto
+          </Text>
+          <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
+            Finalize ou cancele a {ordemAberta.numero} antes de criar uma nova para este cliente.
+          </Text>
+          <AppButton
+            label={`Abrir ${ordemAberta.numero}`}
+            onPress={() => router.push(`/ordens-servico/${ordemAberta.id}`)}
+          />
+          <TouchableOpacity onPress={() => setCliente(null)}>
+            <Text style={[theme.typography.body, { color: theme.colors.primary }]}>
+              Trocar cliente
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.clienteSelecionado}>
-        <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>{cliente.nome}</Text>
-        <TouchableOpacity onPress={() => setCliente(null)}>
-          <Text style={[theme.typography.caption, { color: theme.colors.primary }]}>Trocar</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={[theme.typography.subtitle, styles.sectionTitle, { color: theme.colors.text }]}>
-        Persianas
-      </Text>
-
-      {carregandoPersianas ? (
-        <ActivityIndicator color={theme.colors.primary} />
-      ) : persianas && persianas.length > 0 ? (
-        <View style={styles.persianasList}>
-          {persianas.map((persiana) => {
-            const item = itens[persiana.id];
-            const precoVigente = precoPorTipoId.get(persiana.tipo_id) ?? null;
-            return (
-              <PersianaSelecaoRow
-                key={persiana.id}
-                persiana={persiana}
-                precoVigente={precoVigente ? precoVigente.valor_unitario : null}
-                selecionada={item?.selecionada ?? false}
-                quantidade={item?.quantidade ?? String(persiana.quantidade)}
-                valorAplicado={item?.valorAplicado ?? precoVigente?.valor_unitario ?? 0}
-                ajusteManual={item?.ajusteManual ?? false}
-                onToggleSelecionar={() => handleToggle(persiana.id)}
-                onChangeQuantidade={(value) => handleChangeQuantidade(persiana.id, value)}
-                onEditarValor={() => setEditandoValorId(persiana.id)}
-              />
-            );
-          })}
+    <Screen padded={false}>
+      <ScrollView contentContainerStyle={styles.formScroll}>
+        <View style={styles.clienteSelecionado}>
+          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+            {cliente.nome}
+          </Text>
+          <TouchableOpacity onPress={() => setCliente(null)}>
+            <Text style={[theme.typography.caption, { color: theme.colors.primary }]}>Trocar</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-          Este cliente não possui persianas ativas cadastradas.
-        </Text>
-      )}
 
-      <Text style={[theme.typography.subtitle, styles.sectionTitle, { color: theme.colors.text }]}>
-        Dados da OS
-      </Text>
-      <View style={styles.form}>
-        <FormField
-          control={control}
-          name="formaPagamento"
-          label="Forma de pagamento"
-          error={errors.formaPagamento?.message}
-        />
-        <FormField
-          control={control}
-          name="desconto"
-          label="Desconto (R$)"
-          error={errors.desconto?.message}
-          keyboardType="numeric"
-        />
-        <FormField
-          control={control}
-          name="dataPrevisaoEntrega"
-          label="Previsão de entrega (dd/mm/aaaa)"
-          error={errors.dataPrevisaoEntrega?.message}
-          keyboardType="numeric"
-        />
-        <FormField
-          control={control}
-          name="observacoes"
-          label="Observações"
-          error={errors.observacoes?.message}
-          multiline
-        />
-      </View>
+        <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Persianas</Text>
 
-      <TouchableOpacity
-        onPress={handleSubmit(handleSalvarOrdemServico)}
-        disabled={isSubmitting}
-        style={[
-          styles.button,
-          styles.saveButton,
-          { backgroundColor: theme.colors.primary, opacity: isSubmitting ? 0.6 : 1 },
-        ]}
-      >
-        <Text style={styles.buttonText}>
-          {isSubmitting ? 'Salvando...' : 'Criar Ordem de Serviço'}
-        </Text>
-      </TouchableOpacity>
+        {carregandoPersianas ? (
+          <ActivityIndicator color={theme.colors.primary} />
+        ) : persianas && persianas.length > 0 ? (
+          <View style={styles.persianasList}>
+            {persianas.map((persiana) => {
+              const item = itens[persiana.id];
+              const precoVigente = precoPorTipoId.get(persiana.tipo_id) ?? null;
+              return (
+                <PersianaSelecaoRow
+                  key={persiana.id}
+                  persiana={persiana}
+                  precoVigente={precoVigente ? precoVigente.valor_unitario : null}
+                  selecionada={item?.selecionada ?? false}
+                  quantidade={item?.quantidade ?? String(persiana.quantidade)}
+                  valorAplicado={item?.valorAplicado ?? precoVigente?.valor_unitario ?? 0}
+                  ajusteManual={item?.ajusteManual ?? false}
+                  onToggleSelecionar={() => handleToggle(persiana.id)}
+                  onChangeQuantidade={(value) => handleChangeQuantidade(persiana.id, value)}
+                  onEditarValor={() => setEditandoValorId(persiana.id)}
+                />
+              );
+            })}
+          </View>
+        ) : (
+          <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
+            Este cliente não possui persianas ativas cadastradas.
+          </Text>
+        )}
+
+        <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Dados da OS</Text>
+        <Card style={styles.form}>
+          <FormField
+            control={control}
+            name="formaPagamento"
+            label="Forma de pagamento"
+            error={errors.formaPagamento?.message}
+          />
+          <FormField
+            control={control}
+            name="desconto"
+            label="Desconto (R$)"
+            error={errors.desconto?.message}
+            keyboardType="numeric"
+          />
+          <FormField
+            control={control}
+            name="dataPrevisaoEntrega"
+            label="Previsão de entrega (dd/mm/aaaa)"
+            error={errors.dataPrevisaoEntrega?.message}
+            keyboardType="numeric"
+          />
+          <FormField
+            control={control}
+            name="observacoes"
+            label="Observações"
+            error={errors.observacoes?.message}
+            multiline
+          />
+        </Card>
+
+        <AppButton
+          label={isSubmitting ? 'Salvando...' : 'Criar Ordem de Serviço'}
+          onPress={handleSubmit(handleSalvarOrdemServico)}
+          disabled={isSubmitting}
+        />
+      </ScrollView>
 
       {itemEditando ? (
         <EditarValorModal
@@ -327,21 +331,15 @@ export default function NovaOrdemServicoScreen() {
           onCancelar={() => setEditandoValorId(null)}
         />
       ) : null}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
   search: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     marginBottom: 12,
   },
   loading: {
@@ -352,11 +350,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  clienteRow: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+  clienteList: {
+    gap: 12,
   },
   avisoContainer: {
+    flex: 1,
     justifyContent: 'center',
     gap: 12,
   },
@@ -364,11 +362,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    marginTop: 16,
-    marginBottom: 8,
   },
   persianasList: {
     gap: 8,
@@ -376,17 +369,8 @@ const styles = StyleSheet.create({
   form: {
     gap: 12,
   },
-  button: {
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  saveButton: {
-    marginTop: 20,
-    marginBottom: 32,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  formScroll: {
+    padding: 20,
+    gap: 16,
   },
 });

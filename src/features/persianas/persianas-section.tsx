@@ -63,12 +63,14 @@ export function PersianasSection({ clienteId }: PersianasSectionProps) {
   const editingPersiana = persianas?.find((persiana) => persiana.id === editingId);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { padding: theme.spacing.md, gap: theme.spacing.sm }]}>
       <View style={styles.header}>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Persianas</Text>
         {!addingNew && !editingId ? (
           <TouchableOpacity onPress={() => setAddingNew(true)}>
-            <Text style={[theme.typography.body, { color: theme.colors.primary }]}>+ Adicionar</Text>
+            <Text style={[theme.typography.body, { color: theme.colors.primary, fontWeight: '600' }]}>
+              + Adicionar
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -129,10 +131,7 @@ export function PersianasSection({ clienteId }: PersianasSectionProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    gap: 12,
-  },
+  container: {},
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

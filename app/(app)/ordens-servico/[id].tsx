@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/theme/theme-provider';
 import {
@@ -17,10 +9,13 @@ import {
 } from '@/features/ordens-servico/hooks';
 import { isStatusAberto, PROXIMO_STATUS, type StatusOS } from '@/features/ordens-servico/status';
 import { ItemRow } from '@/features/ordens-servico/item-row';
+import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import { EditarValorModal } from '@/features/ordens-servico/editar-valor-modal';
 import type { AjusteValorFormData } from '@/features/ordens-servico/schema';
 import { formatCurrency } from '@/utils/format-currency';
 import { formatDate } from '@/utils/format-date';
+import { Card } from '@/components/card';
+import { AppButton } from '@/components/app-button';
 
 export default function OrdemServicoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -94,11 +89,13 @@ export default function OrdemServicoDetailScreen() {
       <Stack.Screen options={{ title: os.numero }} />
 
       <View style={styles.section}>
-        <Text style={[theme.typography.title, { color: theme.colors.text }]}>{os.numero}</Text>
+        <View style={styles.headerRow}>
+          <Text style={[theme.typography.title, { color: theme.colors.text }]}>{os.numero}</Text>
+          <StatusBadge status={status} />
+        </View>
         <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
           {os.cliente?.nome ?? 'Cliente removido'}
         </Text>
-        <Text style={[theme.typography.body, { color: theme.colors.text }]}>Status: {status}</Text>
         <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
           Abertura: {formatDate(os.data_abertura)}
           {os.data_previsao_entrega ? ` · Previsão: ${formatDate(os.data_previsao_entrega)}` : ''}
@@ -114,7 +111,7 @@ export default function OrdemServicoDetailScreen() {
         </View>
       </View>
 
-      <View style={styles.section}>
+      <Card style={styles.valuesCard}>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Valores</Text>
         <Text style={[theme.typography.body, { color: theme.colors.text }]}>
           Total: {formatCurrency(os.valor_total)}
@@ -133,34 +130,31 @@ export default function OrdemServicoDetailScreen() {
             Forma de pagamento: {os.forma_pagamento}
           </Text>
         ) : null}
-      </View>
+      </Card>
 
       {os.observacoes ? (
         <View style={styles.section}>
-          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Observações</Text>
+          <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+            Observações
+          </Text>
           <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
             {os.observacoes}
           </Text>
         </View>
       ) : null}
 
-      {proximoStatus ? (
-        <TouchableOpacity
-          onPress={handleAvancarStatus}
-          style={[styles.button, { backgroundColor: theme.colors.primary }]}
-        >
-          <Text style={styles.buttonText}>Avançar para &quot;{proximoStatus}&quot;</Text>
-        </TouchableOpacity>
-      ) : null}
+      <View style={styles.actions}>
+        {proximoStatus ? (
+          <AppButton
+            label={`Avançar para "${proximoStatus}"`}
+            onPress={handleAvancarStatus}
+          />
+        ) : null}
 
-      {isStatusAberto(status) ? (
-        <TouchableOpacity
-          onPress={handleCancelar}
-          style={[styles.button, styles.cancelButton, { borderColor: theme.colors.danger }]}
-        >
-          <Text style={[theme.typography.body, { color: theme.colors.danger }]}>Cancelar OS</Text>
-        </TouchableOpacity>
-      ) : null}
+        {isStatusAberto(status) ? (
+          <AppButton label="Cancelar OS" onPress={handleCancelar} variant="danger" />
+        ) : null}
+      </View>
 
       {itemEditando ? (
         <EditarValorModal
@@ -179,7 +173,7 @@ export default function OrdemServicoDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,
@@ -190,22 +184,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 4,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   itemsList: {
     gap: 8,
     marginTop: 8,
   },
-  button: {
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginBottom: 12,
+  valuesCard: {
+    gap: 4,
+    marginBottom: 20,
   },
-  cancelButton: {
-    borderWidth: 1,
-    backgroundColor: 'transparent',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
+  actions: {
+    gap: 12,
+    marginBottom: 32,
   },
 });
