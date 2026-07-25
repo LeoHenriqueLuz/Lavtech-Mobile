@@ -42,7 +42,14 @@ export default function OrdemServicoDetailScreen() {
     try {
       const html = buildOrdemServicoPdfHtml(os, empresa);
       if (Platform.OS === 'web') {
-        await Print.printAsync({ html });
+        // No web, Print.printAsync ignora `html` e imprime a página atual — abrimos
+        // o HTML numa aba própria e imprimimos ela.
+        const janela = window.open('', '_blank');
+        if (!janela) throw new Error('Não foi possível abrir a janela de impressão.');
+        janela.document.write(html);
+        janela.document.close();
+        janela.focus();
+        janela.print();
       } else {
         const { uri } = await Print.printToFileAsync({ html });
         await Sharing.shareAsync(uri, {
