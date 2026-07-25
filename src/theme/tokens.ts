@@ -34,7 +34,7 @@ export interface Colors {
 }
 
 export const defaultColors: Colors = {
-  primary: '#6366F1',
+  primary: '#2564A2',
   background: '#0A0A0A',
   surface: '#111111',
   surfaceElevated: '#171717',
