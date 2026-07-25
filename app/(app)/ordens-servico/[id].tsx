@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { useTheme } from '@/theme/theme-provider';
 import {
   useOrdemServico,
@@ -11,7 +13,9 @@ import { isStatusAberto, PROXIMO_STATUS, type StatusOS } from '@/features/ordens
 import { ItemRow } from '@/features/ordens-servico/item-row';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import { EditarValorModal } from '@/features/ordens-servico/editar-valor-modal';
+import { buildOrdemServicoPdfHtml } from '@/features/ordens-servico/pdf';
 import type { AjusteValorFormData } from '@/features/ordens-servico/schema';
+import { useConfiguracoesEmpresa } from '@/features/empresa/hooks';
 import { formatCurrency } from '@/utils/format-currency';
 import { formatDate } from '@/utils/format-date';
 import { Card } from '@/components/card';
@@ -21,10 +25,33 @@ export default function OrdemServicoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
   const [editandoItemId, setEditandoItemId] = useState<string | null>(null);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   const { data: os, isLoading } = useOrdemServico(id);
+  const { data: empresa } = useConfiguracoesEmpresa();
   const updateStatus = useUpdateStatusOrdemServico(id);
   const updateItemValor = useUpdateItemValor(id);
+
+  async function handleGerarPdf() {
+    if (!os || !empresa) return;
+    setGerandoPdf(true);
+    try {
+      const html = buildOrdemServicoPdfHtml(os, empresa);
+      if (Platform.OS === 'web') {
+        await Print.printAsync({ html });
+      } else {
+        const { uri } = await Print.printToFileAsync({ html });
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: `OS ${os.numero}`,
+        });
+      }
+    } catch {
+      Alert.alert('Erro', 'Não foi possível gerar o PDF.');
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
 
   async function handleSalvarValor(data: AjusteValorFormData) {
     if (!editandoItemId) return;
@@ -144,6 +171,13 @@ export default function OrdemServicoDetailScreen() {
       ) : null}
 
       <View style={styles.actions}>
+        <AppButton
+          label={gerandoPdf ? 'Gerando PDF...' : 'Gerar PDF'}
+          onPress={handleGerarPdf}
+          variant="secondary"
+          disabled={gerandoPdf || !empresa}
+        />
+
         {proximoStatus ? (
           <AppButton
             label={`Avançar para "${proximoStatus}"`}
