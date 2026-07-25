@@ -1,54 +1,48 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/theme/theme-provider';
 import { FormField } from '@/components/form-field';
 import { Card } from '@/components/card';
 import { AppButton } from '@/components/app-button';
+import { cadastrarUsuario } from '@/features/cadastro/api';
+import {
+  cadastroFormDefaultValues,
+  cadastroSchema,
+  type CadastroFormData,
+} from '@/features/cadastro/schema';
 
-const loginSchema = z.object({
-  email: z.string().min(1, 'Informe o e-mail').email('E-mail inválido'),
-  senha: z
-    .string()
-    .min(1, 'Informe a senha')
-    .regex(/^\d{6}$/, 'A senha deve ter exatamente 6 números'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-export default function LoginScreen() {
+export default function CadastroScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const [erroLogin, setErroLogin] = useState<string | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', senha: '' },
+  } = useForm<CadastroFormData>({
+    resolver: zodResolver(cadastroSchema),
+    defaultValues: cadastroFormDefaultValues,
   });
 
-  async function onSubmit(data: LoginFormData) {
-    setErroLogin(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.senha,
-    });
-    if (error) {
-      setErroLogin('E-mail ou senha inválidos.');
+  async function onSubmit(data: CadastroFormData) {
+    setErro(null);
+    try {
+      await cadastrarUsuario(data);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.senha,
+      });
+      // Se o login automático falhar por algum motivo, a conta já foi criada —
+      // manda pro login pra tentar entrar manualmente.
+      if (error) {
+        router.replace('/(auth)/login');
+      }
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Não foi possível concluir o cadastro.');
     }
   }
 
@@ -59,14 +53,11 @@ export default function LoginScreen() {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          <Image
-            source={require('../../assets/logo-wordmark.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Text style={[theme.typography.title, { color: theme.colors.text }]}>Criar conta</Text>
         </View>
 
         <Card style={styles.form}>
+          <FormField control={control} name="nome" label="Nome" error={errors.nome?.message} />
           <FormField
             control={control}
             name="email"
@@ -75,7 +66,6 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-
           <FormField
             control={control}
             name="senha"
@@ -86,25 +76,30 @@ export default function LoginScreen() {
             keyboardType="number-pad"
             maxLength={6}
           />
+          <FormField
+            control={control}
+            name="codigoAcesso"
+            label="Código de acesso"
+            error={errors.codigoAcesso?.message}
+            autoCapitalize="characters"
+          />
 
-          {erroLogin ? (
-            <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>
-              {erroLogin}
-            </Text>
+          {erro ? (
+            <Text style={[theme.typography.caption, { color: theme.colors.danger }]}>{erro}</Text>
           ) : null}
 
           <AppButton
-            label={isSubmitting ? 'Entrando...' : 'Entrar'}
+            label={isSubmitting ? 'Criando conta...' : 'Criar conta'}
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
           />
         </Card>
 
-        <TouchableOpacity onPress={() => router.push('/(auth)/cadastro')}>
-          <Text style={[theme.typography.body, styles.criarConta, { color: theme.colors.primary }]}>
-            Criar conta
-          </Text>
-        </TouchableOpacity>
+        <AppButton
+          label="Já tenho conta"
+          onPress={() => router.replace('/(auth)/login')}
+          variant="secondary"
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -124,15 +119,7 @@ const styles = StyleSheet.create({
     gap: 4,
     alignItems: 'center',
   },
-  logo: {
-    width: 220,
-    height: 95,
-  },
   form: {
     gap: 16,
-  },
-  criarConta: {
-    textAlign: 'center',
-    fontWeight: '600',
   },
 });
