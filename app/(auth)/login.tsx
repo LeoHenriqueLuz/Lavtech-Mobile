@@ -11,7 +11,10 @@ import { AppButton } from '@/components/app-button';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Informe o e-mail').email('E-mail inválido'),
-  senha: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
+  senha: z
+    .string()
+    .min(1, 'Informe a senha')
+    .regex(/^\d{6}$/, 'A senha deve ter exatamente 6 números'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -69,6 +72,8 @@ export default function LoginScreen() {
             error={errors.senha?.message}
             secureTextEntry
             autoCapitalize="none"
+            keyboardType="number-pad"
+            maxLength={6}
           />
 
           {erroLogin ? (
