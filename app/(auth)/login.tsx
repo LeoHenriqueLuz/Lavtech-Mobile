@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { useTheme } from '@/theme/theme-provider';
 import { FormField } from '@/components/form-field';
@@ -49,15 +49,7 @@ export default function LoginScreen() {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-          <Image
-            source={require('../../assets/brand-mark.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
           <Text style={[theme.typography.title, { color: theme.colors.text }]}>LavTech</Text>
-          <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-            Entre com seu e-mail e senha
-          </Text>
         </View>
 
         <Card style={styles.form}>
@@ -111,11 +103,6 @@ const styles = StyleSheet.create({
   header: {
     gap: 4,
     alignItems: 'center',
-  },
-  logo: {
-    width: 88,
-    height: 88,
-    marginBottom: 8,
   },
   form: {
     gap: 16,
