@@ -16,9 +16,22 @@ import {
 import { queryClient } from '@/lib/query-client';
 import { ThemeProvider } from '@/theme/theme-provider';
 import { defaultColors } from '@/theme/tokens';
-import { SessionProvider } from '@/hooks/use-session';
+import { SessionProvider, useSession } from '@/hooks/use-session';
 
 SplashScreen.preventAutoHideAsync();
+
+/** Só esconde a splash quando fontes e sessão inicial já estiverem prontas, evitando um flash de tela em branco. */
+function SplashGate({ fontsLoaded }: { fontsLoaded: boolean }) {
+  const { isLoading: sessionLoading } = useSession();
+
+  useEffect(() => {
+    if (fontsLoaded && !sessionLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, sessionLoading]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -27,12 +40,6 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;
@@ -44,6 +51,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <SessionProvider>
             <ThemeProvider>
+              <SplashGate fontsLoaded={fontsLoaded} />
               <View style={{ flex: 1, backgroundColor: defaultColors.background }}>
                 <Slot />
               </View>

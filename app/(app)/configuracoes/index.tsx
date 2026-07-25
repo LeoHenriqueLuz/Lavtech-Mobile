@@ -1,9 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ChevronRight, Home, Layers } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
+import { AppButton } from '@/components/app-button';
+import { supabase } from '@/lib/supabase';
 
 const ITENS = [
   { href: '/configuracoes/ambientes', label: 'Ambientes', icon: Home },
@@ -13,6 +15,21 @@ const ITENS = [
 export default function ConfiguracoesScreen() {
   const theme = useTheme();
   const router = useRouter();
+
+  function handleSignOut() {
+    Alert.alert('Sair', 'Deseja encerrar sua sessão?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          supabase.auth.signOut().catch(() => {
+            Alert.alert('Erro', 'Não foi possível encerrar a sessão.');
+          });
+        },
+      },
+    ]);
+  }
 
   return (
     <Screen>
@@ -42,6 +59,10 @@ export default function ConfiguracoesScreen() {
           );
         })}
       </View>
+
+      <View style={styles.footer}>
+        <AppButton label="Sair" onPress={handleSignOut} variant="danger" />
+      </View>
     </Screen>
   );
 }
@@ -63,5 +84,8 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
+  },
+  footer: {
+    marginTop: 24,
   },
 });
