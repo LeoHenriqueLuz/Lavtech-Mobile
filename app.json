@@ -40,7 +40,8 @@
           "photosPermission": "O LavTech usa a galeria para selecionar o logo da empresa."
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-notifications"
     ]
   }
 }

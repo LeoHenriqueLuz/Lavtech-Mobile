@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { Plus } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { useOrdensServico } from '@/features/ordens-servico/hooks';
+import { sincronizarLembretesReinstalacao } from '@/features/ordens-servico/notifications';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import type { StatusOS } from '@/features/ordens-servico/status';
 import { formatCurrency } from '@/utils/format-currency';
@@ -13,6 +15,12 @@ export default function OrdensServicoScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { data: ordens, isLoading, error } = useOrdensServico();
+
+  useEffect(() => {
+    if (ordens) {
+      sincronizarLembretesReinstalacao(ordens);
+    }
+  }, [ordens]);
 
   return (
     <Screen>

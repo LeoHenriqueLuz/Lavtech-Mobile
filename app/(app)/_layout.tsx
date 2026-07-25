@@ -1,11 +1,17 @@
+import { useEffect } from 'react';
 import { Redirect, Tabs } from 'expo-router';
 import { ClipboardList, LayoutDashboard, Settings, Tag, Users } from 'lucide-react-native';
 import { useSession } from '@/hooks/use-session';
 import { useTheme } from '@/theme/theme-provider';
+import { configurarNotificacoes } from '@/lib/notifications';
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
   const theme = useTheme();
+
+  useEffect(() => {
+    configurarNotificacoes();
+  }, []);
 
   if (isLoading) return null;
   if (!session) return <Redirect href="/(auth)/login" />;

@@ -14,6 +14,10 @@ import { ItemRow } from '@/features/ordens-servico/item-row';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import { EditarValorModal } from '@/features/ordens-servico/editar-valor-modal';
 import { buildOrdemServicoPdfHtml } from '@/features/ordens-servico/pdf';
+import {
+  agendarLembreteReinstalacao,
+  cancelarLembreteReinstalacao,
+} from '@/features/ordens-servico/notifications';
 import type { AjusteValorFormData } from '@/features/ordens-servico/schema';
 import { useConfiguracoesEmpresa } from '@/features/empresa/hooks';
 import { formatCurrency } from '@/utils/format-currency';
@@ -65,22 +69,39 @@ export default function OrdemServicoDetailScreen() {
 
   function handleAvancarStatus() {
     if (!os) return;
-    const proximo = PROXIMO_STATUS[os.status as StatusOS];
+    const statusAtual = os.status as StatusOS;
+    const proximo = PROXIMO_STATUS[statusAtual];
     if (!proximo) return;
     Alert.alert('Avançar status', `Alterar status para "${proximo}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Confirmar',
         onPress: () => {
-          updateStatus.mutateAsync(proximo).catch(() => {
-            Alert.alert('Erro', 'Não foi possível atualizar o status.');
-          });
+          updateStatus
+            .mutateAsync(proximo)
+            .then(() => {
+              if (proximo === 'Reinstalação Agendada') {
+                agendarLembreteReinstalacao({
+                  id: os.id,
+                  numero: os.numero,
+                  clienteNome: os.cliente?.nome ?? 'Cliente',
+                  dataPrevisaoEntrega: os.data_previsao_entrega,
+                });
+              } else if (statusAtual === 'Reinstalação Agendada') {
+                cancelarLembreteReinstalacao(os.id);
+              }
+            })
+            .catch(() => {
+              Alert.alert('Erro', 'Não foi possível atualizar o status.');
+            });
         },
       },
     ]);
   }
 
   function handleCancelar() {
+    if (!os) return;
+    const statusAtual = os.status as StatusOS;
     Alert.alert(
       'Cancelar Ordem de Serviço',
       'Esta ação mantém o registro, apenas altera o status. Deseja continuar?',
@@ -90,9 +111,16 @@ export default function OrdemServicoDetailScreen() {
           text: 'Cancelar OS',
           style: 'destructive',
           onPress: () => {
-            updateStatus.mutateAsync('Cancelado').catch(() => {
-              Alert.alert('Erro', 'Não foi possível cancelar a ordem de serviço.');
-            });
+            updateStatus
+              .mutateAsync('Cancelado')
+              .then(() => {
+                if (statusAtual === 'Reinstalação Agendada') {
+                  cancelarLembreteReinstalacao(os.id);
+                }
+              })
+              .catch(() => {
+                Alert.alert('Erro', 'Não foi possível cancelar a ordem de serviço.');
+              });
           },
         },
       ],
