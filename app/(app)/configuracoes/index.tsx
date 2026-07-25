@@ -1,6 +1,6 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronRight, Home, Layers } from 'lucide-react-native';
+import { Building2, ChevronRight, Home, Layers } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
@@ -8,6 +8,7 @@ import { AppButton } from '@/components/app-button';
 import { supabase } from '@/lib/supabase';
 
 const ITENS = [
+  { href: '/configuracoes/empresa', label: 'Dados da Empresa', icon: Building2 },
   { href: '/configuracoes/ambientes', label: 'Ambientes', icon: Home },
   { href: '/configuracoes/tipos-persiana', label: 'Tipos de Persiana', icon: Layers },
 ] as const;

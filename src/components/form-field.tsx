@@ -9,6 +9,8 @@ interface FormFieldProps<T extends FieldValues> {
   label: string;
   error?: string;
   onFieldBlur?: (value: string) => void;
+  /** Transforma o texto digitado antes de salvar no form (ex: aplicar máscara). */
+  formatValue?: (text: string) => string;
   keyboardType?: TextInputProps['keyboardType'];
   autoCapitalize?: TextInputProps['autoCapitalize'];
   multiline?: boolean;
@@ -22,6 +24,7 @@ export function FormField<T extends FieldValues>({
   label,
   error,
   onFieldBlur,
+  formatValue,
   keyboardType,
   autoCapitalize = 'sentences',
   multiline,
@@ -54,7 +57,7 @@ export function FormField<T extends FieldValues>({
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             value={typeof value === 'string' ? value : ''}
-            onChangeText={onChange}
+            onChangeText={(text) => onChange(formatValue ? formatValue(text) : text)}
             onFocus={() => setFocused(true)}
             onBlur={() => {
               setFocused(false);

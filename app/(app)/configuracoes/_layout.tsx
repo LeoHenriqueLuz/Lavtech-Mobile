@@ -12,6 +12,7 @@ export default function ConfiguracoesLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Configurações' }} />
+      <Stack.Screen name="empresa" options={{ title: 'Dados da Empresa' }} />
       <Stack.Screen name="ambientes" options={{ title: 'Ambientes' }} />
       <Stack.Screen name="tipos-persiana" options={{ title: 'Tipos de Persiana' }} />
     </Stack>

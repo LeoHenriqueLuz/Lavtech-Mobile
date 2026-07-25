@@ -33,6 +33,12 @@
           "imageWidth": 180,
           "backgroundColor": "#0A0A0A"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O LavTech usa a galeria para selecionar o logo da empresa."
+        }
       ]
     ]
   }
