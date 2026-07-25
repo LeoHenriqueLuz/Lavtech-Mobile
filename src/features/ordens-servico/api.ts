@@ -24,6 +24,7 @@ export interface ItemComPersiana extends OrdemServicoItem {
 
 export interface OrdemServicoDetalhe extends OrdemServico {
   cliente: Cliente | null;
+  responsavel: { nome: string } | null;
   itens: ItemComPersiana[];
 }
 
@@ -61,7 +62,7 @@ export async function getOrdemAbertaPorCliente(clienteId: string): Promise<Ordem
 export async function getOrdemServico(id: string): Promise<OrdemServicoDetalhe> {
   const { data: os, error } = await supabase
     .from('ordens_servico')
-    .select('*, cliente:clientes(*)')
+    .select('*, cliente:clientes(*), responsavel:usuarios(nome)')
     .eq('id', id)
     .single();
   if (error) throw error;

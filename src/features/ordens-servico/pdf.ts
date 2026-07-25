@@ -18,10 +18,9 @@ function enderecoCliente(cliente: OrdemServicoDetalhe['cliente']): string {
   const partes = [
     cliente.logradouro,
     cliente.numero,
-    cliente.complemento,
     cliente.bairro,
-    cliente.cidade && cliente.estado ? `${cliente.cidade}/${cliente.estado}` : cliente.cidade,
-    cliente.cep,
+    cliente.cidade,
+    cliente.estado,
   ].filter(Boolean);
   return partes.join(', ');
 }
@@ -40,15 +39,13 @@ export function buildOrdemServicoPdfHtml(
         item.persiana?.ambiente_outro_descricao,
       );
       const tipo = item.persiana?.tipo?.nome ?? '—';
-      const subtotal =
-        item.quantidade * item.valor_unitario_aplicado +
-        item.quantidade * item.valor_manutencao_aplicado;
+      const subtotal = item.quantidade * item.valor_unitario_aplicado;
       return `
         <tr>
-          <td>${escapeHtml(ambiente)} · ${escapeHtml(tipo)}</td>
           <td class="center">${item.quantidade}</td>
+          <td>${escapeHtml(ambiente)} — ${escapeHtml(tipo)}</td>
           <td class="right">${formatCurrency(item.valor_unitario_aplicado)}</td>
-          <td class="right">${formatCurrency(subtotal)}</td>
+          <td class="right"><strong>${formatCurrency(subtotal)}</strong></td>
         </tr>
       `;
     })
@@ -64,53 +61,80 @@ export function buildOrdemServicoPdfHtml(
           body {
             font-family: -apple-system, Helvetica, Arial, sans-serif;
             color: #1A1A1A;
-            padding: 32px;
+            padding: 36px;
             font-size: 13px;
           }
           .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 3px solid ${cor};
-            padding-bottom: 16px;
+            margin-bottom: 12px;
+          }
+          .header img { max-height: 90px; max-width: 220px; object-fit: contain; }
+          .contato { text-align: right; color: #555; font-size: 11px; }
+          .contato p { margin: 2px 0; }
+          .divisor { border: none; border-top: 2px solid ${cor}; margin: 0 0 24px; }
+          .titulo { text-align: center; margin-bottom: 20px; }
+          .titulo h1 { margin: 0; font-size: 22px; letter-spacing: 0.5px; color: ${cor}; }
+          .titulo p { margin: 4px 0 0; font-size: 13px; color: #444; }
+          .info-box {
+            border: 1px solid #CCC;
+            border-radius: 4px;
+            padding: 12px 16px;
             margin-bottom: 20px;
           }
-          .header img { max-height: 64px; max-width: 160px; object-fit: contain; }
-          .header .empresa { text-align: right; }
-          .empresa h1 { margin: 0; font-size: 18px; color: ${cor}; }
-          .empresa p { margin: 2px 0; color: #555; font-size: 11px; }
-          .os-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-          .os-title h2 { margin: 0; font-size: 20px; }
-          .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 999px;
-            background: ${cor}22;
-            color: ${cor};
-            font-size: 12px;
-            font-weight: 600;
+          .info-box p { margin: 3px 0; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+          th {
+            background: ${cor};
+            color: #FFFFFF;
+            padding: 8px;
+            font-size: 11px;
+            text-align: left;
           }
-          .section { margin-bottom: 20px; }
-          .section h3 {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #777;
-            margin: 0 0 6px;
-          }
-          .section p { margin: 2px 0; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th, td { padding: 8px; border-bottom: 1px solid #E5E5E5; font-size: 12px; text-align: left; }
-          th { color: #777; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+          td { padding: 8px; border-bottom: 1px solid #E5E5E5; font-size: 12px; }
           .center { text-align: center; }
           .right { text-align: right; }
-          .totais { width: 260px; margin-left: auto; }
+          .totais { width: 300px; margin-left: auto; margin-bottom: 24px; }
           .totais p { display: flex; justify-content: space-between; margin: 4px 0; }
-          .totais .final { font-size: 15px; font-weight: 700; border-top: 1px solid #E5E5E5; padding-top: 6px; margin-top: 6px; }
-          .assinaturas { display: flex; justify-content: space-between; margin-top: 56px; gap: 40px; }
-          .assinatura { flex: 1; text-align: center; }
-          .assinatura .linha { border-top: 1px solid #333; margin-bottom: 6px; }
-          .assinatura p { font-size: 11px; color: #555; margin: 0; }
+          .totais .final {
+            font-size: 15px;
+            font-weight: 700;
+            color: ${cor};
+            border-top: 1px solid #E5E5E5;
+            padding-top: 6px;
+            margin-top: 6px;
+          }
+          .caixas { display: flex; gap: 12px; margin-bottom: 20px; }
+          .caixa {
+            flex: 1;
+            border: 1px solid #CCC;
+            border-radius: 4px;
+            padding: 8px 12px;
+          }
+          .caixa h4 {
+            margin: 0 0 4px;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+            color: #777;
+          }
+          .caixa p { margin: 0; font-size: 12px; }
+          .observacoes { margin-bottom: 20px; }
+          .observacoes h4 { margin: 0 0 4px; font-size: 12px; color: ${cor}; }
+          .observacoes p { margin: 2px 0; font-size: 12px; white-space: pre-line; }
+          .assinaturas {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 56px;
+            gap: 40px;
+          }
+          .assinatura-cliente { flex: 1; }
+          .assinatura-cliente .linha { border-top: 1px solid #333; margin-bottom: 6px; }
+          .assinatura-cliente p { font-size: 10px; color: #777; margin: 0; }
+          .assinatura-empresa { text-align: right; }
+          .assinatura-empresa .nome { font-weight: 700; margin: 0; font-size: 12px; }
+          .assinatura-empresa p { margin: 2px 0; font-size: 11px; color: #555; }
           .footer {
             margin-top: 32px;
             padding-top: 12px;
@@ -123,80 +147,87 @@ export function buildOrdemServicoPdfHtml(
       </head>
       <body>
         <div class="header">
-          ${empresa.logo_url ? `<img src="${escapeHtml(empresa.logo_url)}" />` : '<div></div>'}
-          <div class="empresa">
-            <h1>${escapeHtml(empresa.nome_fantasia) || 'LavTech'}</h1>
-            ${empresa.razao_social ? `<p>${escapeHtml(empresa.razao_social)}</p>` : ''}
+          ${empresa.logo_url ? `<img src="${escapeHtml(empresa.logo_url)}" />` : `<div><strong>${escapeHtml(empresa.nome_fantasia) || 'LavTech'}</strong></div>`}
+          <div class="contato">
+            ${empresa.endereco ? `<p>${escapeHtml(empresa.endereco)}</p>` : ''}
+            ${empresa.whatsapp ? `<p>WhatsApp: ${escapeHtml(empresa.whatsapp)}</p>` : ''}
             ${empresa.cnpj ? `<p>CNPJ: ${escapeHtml(empresa.cnpj)}</p>` : ''}
-            ${empresa.telefone || empresa.whatsapp ? `<p>${escapeHtml(empresa.telefone || empresa.whatsapp)}</p>` : ''}
-            ${empresa.email ? `<p>${escapeHtml(empresa.email)}</p>` : ''}
           </div>
         </div>
+        <hr class="divisor" />
 
-        <div class="os-title">
-          <h2>Ordem de Serviço ${escapeHtml(os.numero)}</h2>
-          <span class="status-badge">${escapeHtml(os.status)}</span>
+        <div class="titulo">
+          <h1>ORDEM DE SERVIÇO</h1>
+          <p>Nº ${escapeHtml(os.numero)}</p>
         </div>
 
-        <div class="section">
-          <h3>Cliente</h3>
-          <p><strong>${escapeHtml(os.cliente?.nome) || 'Cliente removido'}</strong></p>
+        <div class="info-box">
+          <p>Cliente: <strong>${escapeHtml(os.cliente?.nome) || 'Cliente removido'}</strong></p>
           ${os.cliente?.whatsapp ? `<p>WhatsApp: ${escapeHtml(os.cliente.whatsapp)}</p>` : ''}
-          ${os.cliente?.email ? `<p>E-mail: ${escapeHtml(os.cliente.email)}</p>` : ''}
-          ${os.cliente ? `<p>${escapeHtml(enderecoCliente(os.cliente))}</p>` : ''}
+          ${os.cliente ? `<p>Endereço: ${escapeHtml(enderecoCliente(os.cliente))}</p>` : ''}
+          <p>
+            Data de Abertura: ${formatDate(os.data_abertura)}
+            ${os.data_previsao_entrega ? `&nbsp;&nbsp;&nbsp;Previsão de Entrega: ${formatDate(os.data_previsao_entrega)}` : ''}
+          </p>
         </div>
 
-        <div class="section">
-          <h3>Datas</h3>
-          <p>Abertura: ${formatDate(os.data_abertura)}</p>
-          ${os.data_previsao_entrega ? `<p>Previsão de entrega: ${formatDate(os.data_previsao_entrega)}</p>` : ''}
-          ${os.data_finalizacao ? `<p>Finalização: ${formatDate(os.data_finalizacao)}</p>` : ''}
+        <table>
+          <thead>
+            <tr>
+              <th class="center">QTD</th>
+              <th>DESCRIÇÃO DOS SERVIÇOS</th>
+              <th class="right">UNIT.</th>
+              <th class="right">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${linhasItens}
+          </tbody>
+        </table>
+
+        <div class="totais">
+          <p><span>VALOR DOS SERVIÇOS:</span><span>${formatCurrency(os.valor_total)}</span></p>
+          <p><span>MANUTENÇÃO:</span><span>+ ${formatCurrency(os.valor_manutencao)}</span></p>
+          ${os.valor_desconto > 0 ? `<p><span>DESCONTO:</span><span>- ${formatCurrency(os.valor_desconto)}</span></p>` : ''}
+          <p class="final"><span>VALOR TOTAL:</span><span>${formatCurrency(os.valor_final)}</span></p>
         </div>
 
-        <div class="section">
-          <h3>Persianas</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th class="center">Qtd.</th>
-                <th class="right">Valor Unit.</th>
-                <th class="right">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${linhasItens}
-            </tbody>
-          </table>
-
-          <div class="totais">
-            <p><span>Total</span><span>${formatCurrency(os.valor_total)}</span></p>
-            <p><span>Manutenção</span><span>${formatCurrency(os.valor_manutencao)}</span></p>
-            <p><span>Desconto</span><span>-${formatCurrency(os.valor_desconto)}</span></p>
-            <p class="final"><span>Valor Final</span><span>${formatCurrency(os.valor_final)}</span></p>
-            ${os.forma_pagamento ? `<p><span>Pagamento</span><span>${escapeHtml(os.forma_pagamento)}</span></p>` : ''}
+        <div class="caixas">
+          <div class="caixa">
+            <h4>STATUS</h4>
+            <p>${escapeHtml(os.status)}</p>
           </div>
-        </div>
-
-        <div class="assinaturas">
-          <div class="assinatura">
-            <div class="linha">&nbsp;</div>
-            <p>${escapeHtml(os.cliente?.nome) || 'Cliente'}</p>
+          <div class="caixa">
+            <h4>FORMA DE PAGAMENTO</h4>
+            <p>${escapeHtml(os.forma_pagamento) || '—'}</p>
           </div>
-          <div class="assinatura">
-            <div class="linha">&nbsp;</div>
-            <p>${escapeHtml(empresa.nome_fantasia) || 'LavTech'}</p>
+          <div class="caixa">
+            <h4>RESPONSÁVEL</h4>
+            <p>${escapeHtml(os.responsavel?.nome) || '—'}</p>
           </div>
         </div>
 
         ${
-          empresa.rodape_pdf || empresa.horario_funcionamento
-            ? `<div class="footer">
-                ${empresa.rodape_pdf ? `<p>${escapeHtml(empresa.rodape_pdf)}</p>` : ''}
-                ${empresa.horario_funcionamento ? `<p>${escapeHtml(empresa.horario_funcionamento)}</p>` : ''}
+          os.observacoes
+            ? `<div class="observacoes">
+                <h4>OBSERVAÇÕES</h4>
+                <p>${escapeHtml(os.observacoes)}</p>
               </div>`
             : ''
         }
+
+        <div class="assinaturas">
+          <div class="assinatura-cliente">
+            <div class="linha">&nbsp;</div>
+            <p>ASSINATURA DO CLIENTE</p>
+          </div>
+          <div class="assinatura-empresa">
+            <p class="nome">${escapeHtml(empresa.nome_fantasia) || 'LavTech'}</p>
+            ${empresa.cnpj ? `<p>CNPJ: ${escapeHtml(empresa.cnpj)}</p>` : ''}
+          </div>
+        </div>
+
+        ${empresa.rodape_pdf ? `<div class="footer"><p>${escapeHtml(empresa.rodape_pdf)}</p></div>` : ''}
       </body>
     </html>
   `;
