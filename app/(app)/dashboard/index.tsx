@@ -9,13 +9,6 @@ import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import type { StatusOS } from '@/features/ordens-servico/status';
 import { formatCurrency } from '@/utils/format-currency';
 
-function saudacao(): string {
-  const hora = new Date().getHours();
-  if (hora < 12) return 'Bom dia';
-  if (hora < 18) return 'Boa tarde';
-  return 'Boa noite';
-}
-
 export default function DashboardScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -25,8 +18,6 @@ export default function DashboardScreen() {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[theme.typography.title, { color: theme.colors.text }]}>{saudacao()}</Text>
-
         <View style={styles.metricsRow}>
           <Card style={styles.metricCard}>
             <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
@@ -46,14 +37,14 @@ export default function DashboardScreen() {
           </Card>
           <Card style={styles.metricCard}>
             <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-              Faturamento hoje
+              Faturamento mensal
             </Text>
             <Text
               style={[theme.typography.subtitle, styles.metricValue, { color: theme.colors.success }]}
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {metrics ? formatCurrency(metrics.faturamentoHoje) : '—'}
+              {metrics ? formatCurrency(metrics.faturamentoMensal) : '—'}
             </Text>
           </Card>
         </View>

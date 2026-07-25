@@ -4,12 +4,13 @@ import type { OrdemServicoComCliente } from '@/features/ordens-servico/api';
 export interface DashboardMetrics {
   pendentes: number;
   emAndamento: number;
-  faturamentoHoje: number;
+  faturamentoMensal: number;
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const inicioHoje = new Date();
-  inicioHoje.setHours(0, 0, 0, 0);
+  const inicioMes = new Date();
+  inicioMes.setDate(1);
+  inicioMes.setHours(0, 0, 0, 0);
 
   const [pendentesResult, andamentoResult, faturamentoResult] = await Promise.all([
     supabase
@@ -24,14 +25,14 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       .from('ordens_servico')
       .select('valor_final')
       .eq('status', 'Finalizado')
-      .gte('data_finalizacao', inicioHoje.toISOString()),
+      .gte('data_finalizacao', inicioMes.toISOString()),
   ]);
 
   if (pendentesResult.error) throw pendentesResult.error;
   if (andamentoResult.error) throw andamentoResult.error;
   if (faturamentoResult.error) throw faturamentoResult.error;
 
-  const faturamentoHoje = faturamentoResult.data.reduce(
+  const faturamentoMensal = faturamentoResult.data.reduce(
     (soma, os) => soma + os.valor_final,
     0,
   );
@@ -39,7 +40,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   return {
     pendentes: pendentesResult.count ?? 0,
     emAndamento: andamentoResult.count ?? 0,
-    faturamentoHoje,
+    faturamentoMensal,
   };
 }
 
