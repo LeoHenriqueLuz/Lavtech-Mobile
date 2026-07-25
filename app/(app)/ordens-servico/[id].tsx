@@ -25,16 +25,16 @@ export default function OrdemServicoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
   const [editandoItemId, setEditandoItemId] = useState<string | null>(null);
-  const [gerandoPdf, setGerandoPdf] = useState(false);
+  const [baixandoPdf, setBaixandoPdf] = useState(false);
 
   const { data: os, isLoading } = useOrdemServico(id);
   const { data: empresa } = useConfiguracoesEmpresa();
   const updateStatus = useUpdateStatusOrdemServico(id);
   const updateItemValor = useUpdateItemValor(id);
 
-  async function handleGerarPdf() {
+  async function handleBaixarPdf() {
     if (!os || !empresa) return;
-    setGerandoPdf(true);
+    setBaixandoPdf(true);
     try {
       const html = buildOrdemServicoPdfHtml(os, empresa);
       if (Platform.OS === 'web') {
@@ -49,7 +49,7 @@ export default function OrdemServicoDetailScreen() {
     } catch {
       Alert.alert('Erro', 'Não foi possível gerar o PDF.');
     } finally {
-      setGerandoPdf(false);
+      setBaixandoPdf(false);
     }
   }
 
@@ -172,10 +172,10 @@ export default function OrdemServicoDetailScreen() {
 
       <View style={styles.actions}>
         <AppButton
-          label={gerandoPdf ? 'Gerando PDF...' : 'Gerar PDF'}
-          onPress={handleGerarPdf}
+          label={baixandoPdf ? 'Gerando PDF...' : 'Baixar PDF'}
+          onPress={handleBaixarPdf}
           variant="secondary"
-          disabled={gerandoPdf || !empresa}
+          disabled={baixandoPdf || !empresa}
         />
 
         {proximoStatus ? (
