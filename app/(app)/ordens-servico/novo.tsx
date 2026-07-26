@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,10 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
+import { Calendar } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
+import { maskDataBr } from '@/utils/format-date';
+import { CalendarPickerModal } from '@/components/calendar-picker-modal';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useSession } from '@/hooks/use-session';
 import { useClientes } from '@/features/clientes/hooks';
@@ -54,6 +58,7 @@ export default function NovaOrdemServicoScreen() {
   const buscaClienteDebounced = useDebouncedValue(buscaCliente, 300);
   const [itens, setItens] = useState<Record<string, ItemEstado>>({});
   const [editandoValorId, setEditandoValorId] = useState<string | null>(null);
+  const [calendarioVisivel, setCalendarioVisivel] = useState(false);
 
   const { data: clientesEncontrados, isLoading: carregandoClientes } = useClientes({
     search: buscaClienteDebounced,
@@ -76,11 +81,25 @@ export default function NovaOrdemServicoScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<OrdemServicoFormData>({
     resolver: zodResolver(ordemServicoFormSchema),
     defaultValues: ordemServicoFormDefaultValues,
   });
+
+  const dataPrevisaoEntrega = watch('dataPrevisaoEntrega');
+
+  function handleSelecionarDataPrevisao(dataBr: string) {
+    setValue('dataPrevisaoEntrega', dataBr, { shouldValidate: true });
+    setCalendarioVisivel(false);
+  }
+
+  function handleLimparDataPrevisao() {
+    setValue('dataPrevisaoEntrega', '', { shouldValidate: true });
+    setCalendarioVisivel(false);
+  }
 
   function handleToggle(persianaId: string) {
     setItens((prev) => {
@@ -304,6 +323,24 @@ export default function NovaOrdemServicoScreen() {
             label="Previsão de entrega (dd/mm/aaaa)"
             error={errors.dataPrevisaoEntrega?.message}
             keyboardType="numeric"
+            formatValue={maskDataBr}
+            maxLength={10}
+            rightAccessory={
+              <Pressable
+                onPress={() => setCalendarioVisivel(true)}
+                hitSlop={8}
+                style={[
+                  styles.calendarioButton,
+                  {
+                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: theme.radii.md,
+                  },
+                ]}
+              >
+                <Calendar color={theme.colors.textMuted} size={20} />
+              </Pressable>
+            }
           />
           <FormField
             control={control}
@@ -331,6 +368,14 @@ export default function NovaOrdemServicoScreen() {
           onCancelar={() => setEditandoValorId(null)}
         />
       ) : null}
+
+      <CalendarPickerModal
+        visible={calendarioVisivel}
+        value={dataPrevisaoEntrega}
+        onSelect={handleSelecionarDataPrevisao}
+        onClear={dataPrevisaoEntrega ? handleLimparDataPrevisao : undefined}
+        onClose={() => setCalendarioVisivel(false)}
+      />
     </Screen>
   );
 }
@@ -372,5 +417,9 @@ const styles = StyleSheet.create({
   formScroll: {
     padding: 20,
     gap: 16,
+  },
+  calendarioButton: {
+    borderWidth: 1,
+    padding: 10,
   },
 });
