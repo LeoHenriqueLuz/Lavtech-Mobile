@@ -28,15 +28,15 @@ import type { ItemParaCriar } from '@/features/ordens-servico/api';
 import {
   ordemServicoFormDefaultValues,
   ordemServicoFormSchema,
-  type AjusteValorFormData,
   type OrdemServicoFormData,
 } from '@/features/ordens-servico/schema';
+import type { AjusteValorFormData } from '@/schemas/ajuste-valor';
 import { FormField } from '@/components/form-field';
 import { Card } from '@/components/card';
 import { AppButton } from '@/components/app-button';
 import { Screen } from '@/components/screen';
 import { PersianaSelecaoRow } from '@/features/ordens-servico/persiana-selecao-row';
-import { EditarValorModal } from '@/features/ordens-servico/editar-valor-modal';
+import { EditarValorModal } from '@/components/editar-valor-modal';
 
 interface ItemEstado {
   selecionada: boolean;

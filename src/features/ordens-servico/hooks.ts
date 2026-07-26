@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { AjusteValorFormData } from '@/schemas/ajuste-valor';
 import * as api from './api';
 import type { ItemParaCriar } from './api';
-import type { AjusteValorFormData, OrdemServicoFormData } from './schema';
+import type { OrdemServicoFormData } from './schema';
 import type { StatusOS } from './status';
 
 export function useOrdensServico() {

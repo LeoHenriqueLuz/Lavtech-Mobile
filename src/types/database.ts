@@ -232,6 +232,21 @@ export type Database = {
         }
         Relationships: []
       }
+      numeracao_propostas: {
+        Row: {
+          ano: number
+          ultimo_numero: number
+        }
+        Insert: {
+          ano: number
+          ultimo_numero?: number
+        }
+        Update: {
+          ano?: number
+          ultimo_numero?: number
+        }
+        Relationships: []
+      }
       ordens_servico: {
         Row: {
           cliente_id: string
@@ -413,6 +428,116 @@ export type Database = {
           {
             foreignKeyName: "persianas_tipo_id_fkey"
             columns: ["tipo_id"]
+            isOneToOne: false
+            referencedRelation: "tipos_persiana"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas_comerciais: {
+        Row: {
+          cliente_nome: string | null
+          cliente_whatsapp: string | null
+          created_at: string
+          data_validade: string
+          id: string
+          numero: string
+          observacoes: string | null
+          responsavel_id: string | null
+          status: string
+          updated_at: string
+          validade_dias: number
+          valor_desconto: number
+          valor_final: number
+          valor_subtotal: number
+        }
+        Insert: {
+          cliente_nome?: string | null
+          cliente_whatsapp?: string | null
+          created_at?: string
+          data_validade: string
+          id?: string
+          numero: string
+          observacoes?: string | null
+          responsavel_id?: string | null
+          status?: string
+          updated_at?: string
+          validade_dias?: number
+          valor_desconto?: number
+          valor_final?: number
+          valor_subtotal?: number
+        }
+        Update: {
+          cliente_nome?: string | null
+          cliente_whatsapp?: string | null
+          created_at?: string
+          data_validade?: string
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          responsavel_id?: string | null
+          status?: string
+          updated_at?: string
+          validade_dias?: number
+          valor_desconto?: number
+          valor_final?: number
+          valor_subtotal?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_comerciais_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas_comerciais_itens: {
+        Row: {
+          ajuste_manual: boolean
+          created_at: string
+          id: string
+          motivo_ajuste: string | null
+          proposta_id: string
+          quantidade: number
+          tipo_persiana_id: string
+          valor_unitario_aplicado: number
+          valor_unitario_tabela: number
+        }
+        Insert: {
+          ajuste_manual?: boolean
+          created_at?: string
+          id?: string
+          motivo_ajuste?: string | null
+          proposta_id: string
+          quantidade: number
+          tipo_persiana_id: string
+          valor_unitario_aplicado: number
+          valor_unitario_tabela: number
+        }
+        Update: {
+          ajuste_manual?: boolean
+          created_at?: string
+          id?: string
+          motivo_ajuste?: string | null
+          proposta_id?: string
+          quantidade?: number
+          tipo_persiana_id?: string
+          valor_unitario_aplicado?: number
+          valor_unitario_tabela?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_comerciais_itens_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas_comerciais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_comerciais_itens_tipo_persiana_id_fkey"
+            columns: ["tipo_persiana_id"]
             isOneToOne: false
             referencedRelation: "tipos_persiana"
             referencedColumns: ["id"]

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Redirect, Tabs } from 'expo-router';
-import { ClipboardList, LayoutDashboard, Settings, Tag, Users } from 'lucide-react-native';
+import { ClipboardList, FileText, LayoutDashboard, Settings, Tag, Users } from 'lucide-react-native';
 import { useSession } from '@/hooks/use-session';
 import { useTheme } from '@/theme/theme-provider';
 import { configurarNotificacoes } from '@/lib/notifications';
@@ -50,6 +50,14 @@ export default function AppLayout() {
           title: 'Ordens de Serviço',
           headerShown: false,
           tabBarIcon: ({ color, size }) => <ClipboardList color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="propostas"
+        options={{
+          title: 'Propostas',
+          headerShown: false,
+          tabBarIcon: ({ color, size }) => <FileText color={color} size={size} />,
         }}
       />
       <Tabs.Screen

@@ -1,49 +1,48 @@
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '@/theme/theme-provider';
 import {
-  useOrdemServico,
-  useUpdateItemValor,
-  useUpdateStatusOrdemServico,
-} from '@/features/ordens-servico/hooks';
-import { isStatusAberto, PROXIMO_STATUS, type StatusOS } from '@/features/ordens-servico/status';
-import { ItemRow } from '@/features/ordens-servico/item-row';
-import { StatusBadge } from '@/features/ordens-servico/status-badge';
-import { EditarValorModal } from '@/components/editar-valor-modal';
-import { buildOrdemServicoPdfHtml } from '@/features/ordens-servico/pdf';
-import {
-  agendarLembreteReinstalacao,
-  cancelarLembreteReinstalacao,
-} from '@/features/ordens-servico/notifications';
+  useDeleteProposta,
+  useDuplicateProposta,
+  useProposta,
+  useUpdateItemValorProposta,
+  useUpdateStatusProposta,
+} from '@/features/propostas/hooks';
+import { getStatusEfetivo } from '@/features/propostas/status';
+import { PropostaItemRow } from '@/features/propostas/item-row';
+import { PropostaStatusBadge } from '@/features/propostas/status-badge';
+import { buildPropostaPdfHtml } from '@/features/propostas/pdf';
 import type { AjusteValorFormData } from '@/schemas/ajuste-valor';
+import { EditarValorModal } from '@/components/editar-valor-modal';
 import { useConfiguracoesEmpresa } from '@/features/empresa/hooks';
 import { formatCurrency } from '@/utils/format-currency';
 import { formatDate } from '@/utils/format-date';
 import { Card } from '@/components/card';
 import { AppButton } from '@/components/app-button';
 
-export default function OrdemServicoDetailScreen() {
+export default function PropostaDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
+  const router = useRouter();
   const [editandoItemId, setEditandoItemId] = useState<string | null>(null);
   const [baixandoPdf, setBaixandoPdf] = useState(false);
 
-  const { data: os, isLoading } = useOrdemServico(id);
+  const { data: proposta, isLoading } = useProposta(id);
   const { data: empresa } = useConfiguracoesEmpresa();
-  const updateStatus = useUpdateStatusOrdemServico(id);
-  const updateItemValor = useUpdateItemValor(id);
+  const updateStatus = useUpdateStatusProposta(id);
+  const updateItemValor = useUpdateItemValorProposta(id);
+  const duplicateProposta = useDuplicateProposta();
+  const deleteProposta = useDeleteProposta();
 
   async function handleBaixarPdf() {
-    if (!os || !empresa) return;
+    if (!proposta || !empresa) return;
     setBaixandoPdf(true);
     try {
-      const html = buildOrdemServicoPdfHtml(os, empresa);
+      const html = buildPropostaPdfHtml(proposta, empresa);
       if (Platform.OS === 'web') {
-        // No web, Print.printAsync ignora `html` e imprime a página atual — abrimos
-        // o HTML numa aba própria e imprimimos ela.
         const janela = window.open('', '_blank');
         if (!janela) throw new Error('Não foi possível abrir a janela de impressão.');
         janela.document.write(html);
@@ -54,10 +53,11 @@ export default function OrdemServicoDetailScreen() {
         const { uri } = await Print.printToFileAsync({ html });
         await Sharing.shareAsync(uri, {
           mimeType: 'application/pdf',
-          dialogTitle: `OS ${os.numero}`,
+          dialogTitle: `Proposta ${proposta.numero}`,
         });
       }
-    } catch {
+    } catch (error) {
+      console.error('Falha ao gerar/compartilhar PDF da proposta:', error);
       Alert.alert('Erro', 'Não foi possível gerar o PDF.');
     } finally {
       setBaixandoPdf(false);
@@ -74,67 +74,46 @@ export default function OrdemServicoDetailScreen() {
     }
   }
 
-  function handleAvancarStatus() {
-    if (!os) return;
-    const statusAtual = os.status as StatusOS;
-    const proximo = PROXIMO_STATUS[statusAtual];
-    if (!proximo) return;
-    Alert.alert('Avançar status', `Alterar status para "${proximo}"?`, [
+  function handleMudarStatus(novoStatus: 'Enviada' | 'Aceita' | 'Recusada') {
+    Alert.alert('Alterar status', `Alterar status para "${novoStatus}"?`, [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Confirmar',
         onPress: () => {
-          updateStatus
-            .mutateAsync(proximo)
-            .then(() => {
-              if (proximo === 'Reinstalação Agendada') {
-                agendarLembreteReinstalacao({
-                  id: os.id,
-                  numero: os.numero,
-                  clienteNome: os.cliente?.nome ?? 'Cliente',
-                  dataPrevisaoEntrega: os.data_previsao_entrega,
-                });
-              } else if (statusAtual === 'Reinstalação Agendada') {
-                cancelarLembreteReinstalacao(os.id);
-              }
-            })
-            .catch(() => {
-              Alert.alert('Erro', 'Não foi possível atualizar o status.');
-            });
+          updateStatus.mutateAsync(novoStatus).catch(() => {
+            Alert.alert('Erro', 'Não foi possível atualizar o status.');
+          });
         },
       },
     ]);
   }
 
-  function handleCancelar() {
-    if (!os) return;
-    const statusAtual = os.status as StatusOS;
-    Alert.alert(
-      'Cancelar Ordem de Serviço',
-      'Esta ação mantém o registro, apenas altera o status. Deseja continuar?',
-      [
-        { text: 'Voltar', style: 'cancel' },
-        {
-          text: 'Cancelar OS',
-          style: 'destructive',
-          onPress: () => {
-            updateStatus
-              .mutateAsync('Cancelado')
-              .then(() => {
-                if (statusAtual === 'Reinstalação Agendada') {
-                  cancelarLembreteReinstalacao(os.id);
-                }
-              })
-              .catch(() => {
-                Alert.alert('Erro', 'Não foi possível cancelar a ordem de serviço.');
-              });
-          },
-        },
-      ],
+  function handleDuplicar() {
+    if (!proposta) return;
+    duplicateProposta.mutateAsync(proposta.id).then(
+      (nova) => router.replace(`/propostas/${nova.id}`),
+      () => Alert.alert('Erro', 'Não foi possível duplicar a proposta.'),
     );
   }
 
-  if (isLoading || !os) {
+  function handleExcluir() {
+    if (!proposta) return;
+    Alert.alert('Excluir Proposta', 'Esta ação não pode ser desfeita. Deseja continuar?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir',
+        style: 'destructive',
+        onPress: () => {
+          deleteProposta.mutateAsync(proposta.id).then(
+            () => router.replace('/propostas'),
+            () => Alert.alert('Erro', 'Não foi possível excluir a proposta.'),
+          );
+        },
+      },
+    ]);
+  }
+
+  if (isLoading || !proposta) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
         <ActivityIndicator color={theme.colors.primary} />
@@ -142,33 +121,34 @@ export default function OrdemServicoDetailScreen() {
     );
   }
 
-  const status = os.status as StatusOS;
-  const proximoStatus = PROXIMO_STATUS[status];
-  const itemEditando = os.itens.find((item) => item.id === editandoItemId);
+  const statusEfetivo = getStatusEfetivo(proposta);
+  const itemEditando = proposta.itens.find((item) => item.id === editandoItemId);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Stack.Screen options={{ title: os.numero }} />
+      <Stack.Screen options={{ title: proposta.numero }} />
 
       <View style={styles.section}>
         <View style={styles.headerRow}>
-          <Text style={[theme.typography.title, { color: theme.colors.text }]}>{os.numero}</Text>
-          <StatusBadge status={status} />
+          <Text style={[theme.typography.title, { color: theme.colors.text }]}>
+            {proposta.numero}
+          </Text>
+          <PropostaStatusBadge proposta={proposta} />
         </View>
         <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-          {os.cliente?.nome ?? 'Cliente removido'}
+          {proposta.cliente_nome ?? 'Sem nome'}
+          {proposta.cliente_whatsapp ? ` · ${proposta.cliente_whatsapp}` : ''}
         </Text>
         <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
-          Abertura: {formatDate(os.data_abertura)}
-          {os.data_previsao_entrega ? ` · Previsão: ${formatDate(os.data_previsao_entrega)}` : ''}
+          Emissão: {formatDate(proposta.created_at)} · Validade: {formatDate(proposta.data_validade)}
         </Text>
       </View>
 
       <View style={styles.section}>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Itens</Text>
         <View style={styles.itemsList}>
-          {os.itens.map((item) => (
-            <ItemRow key={item.id} item={item} onPress={() => setEditandoItemId(item.id)} />
+          {proposta.itens.map((item) => (
+            <PropostaItemRow key={item.id} item={item} onPress={() => setEditandoItemId(item.id)} />
           ))}
         </View>
       </View>
@@ -176,31 +156,23 @@ export default function OrdemServicoDetailScreen() {
       <Card style={styles.valuesCard}>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Valores</Text>
         <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-          Total: {formatCurrency(os.valor_total)}
+          Subtotal: {formatCurrency(proposta.valor_subtotal)}
         </Text>
         <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-          Manutenção: {formatCurrency(os.valor_manutencao)}
-        </Text>
-        <Text style={[theme.typography.body, { color: theme.colors.text }]}>
-          Desconto: {formatCurrency(os.valor_desconto)}
+          Desconto: {formatCurrency(proposta.valor_desconto)}
         </Text>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
-          Valor final: {formatCurrency(os.valor_final)}
+          Valor final: {formatCurrency(proposta.valor_final)}
         </Text>
-        {os.forma_pagamento ? (
-          <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-            Forma de pagamento: {os.forma_pagamento}
-          </Text>
-        ) : null}
       </Card>
 
-      {os.observacoes ? (
+      {proposta.observacoes ? (
         <View style={styles.section}>
           <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
             Observações
           </Text>
           <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
-            {os.observacoes}
+            {proposta.observacoes}
           </Text>
         </View>
       ) : null}
@@ -213,16 +185,29 @@ export default function OrdemServicoDetailScreen() {
           disabled={baixandoPdf || !empresa}
         />
 
-        {proximoStatus ? (
-          <AppButton
-            label={`Avançar para "${proximoStatus}"`}
-            onPress={handleAvancarStatus}
-          />
+        {statusEfetivo === 'Rascunho' ? (
+          <AppButton label='Marcar como "Enviada"' onPress={() => handleMudarStatus('Enviada')} />
         ) : null}
 
-        {isStatusAberto(status) ? (
-          <AppButton label="Cancelar OS" onPress={handleCancelar} variant="danger" />
+        {statusEfetivo === 'Enviada' ? (
+          <View style={styles.statusActionsRow}>
+            <AppButton
+              label="Aceita"
+              onPress={() => handleMudarStatus('Aceita')}
+              style={styles.flex}
+            />
+            <AppButton
+              label="Recusada"
+              onPress={() => handleMudarStatus('Recusada')}
+              variant="danger"
+              style={styles.flex}
+            />
+          </View>
         ) : null}
+
+        <AppButton label="Duplicar Proposta" onPress={handleDuplicar} variant="secondary" />
+
+        <AppButton label="Excluir Proposta" onPress={handleExcluir} variant="danger" />
       </View>
 
       {itemEditando ? (
@@ -269,5 +254,12 @@ const styles = StyleSheet.create({
   actions: {
     gap: 12,
     marginBottom: 32,
+  },
+  statusActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  flex: {
+    flex: 1,
   },
 });

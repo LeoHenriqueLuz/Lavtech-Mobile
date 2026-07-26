@@ -6,7 +6,7 @@ import { FormField } from '@/components/form-field';
 import { AppButton } from '@/components/app-button';
 import { useTheme } from '@/theme/theme-provider';
 import { formatCurrency } from '@/utils/format-currency';
-import { ajusteValorSchema, type AjusteValorFormData } from './schema';
+import { ajusteValorSchema, type AjusteValorFormData } from '@/schemas/ajuste-valor';
 
 interface EditarValorModalProps {
   visible: boolean;

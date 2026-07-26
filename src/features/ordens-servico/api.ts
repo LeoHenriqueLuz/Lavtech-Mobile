@@ -1,7 +1,9 @@
 import { format as formatDateFns, parse } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import type { Database } from '@/types/database';
-import type { AjusteValorFormData, OrdemServicoFormData } from './schema';
+import type { AjusteValorFormData } from '@/schemas/ajuste-valor';
+import { somarItens } from '@/utils/calcular-totais';
+import type { OrdemServicoFormData } from './schema';
 import type { StatusOS } from './status';
 
 export type OrdemServico = Database['public']['Tables']['ordens_servico']['Row'];
@@ -80,13 +82,12 @@ export async function getOrdemServico(id: string): Promise<OrdemServicoDetalhe> 
 }
 
 function calcularTotais(itens: ItemParaCriar[]) {
-  const valorTotal = itens.reduce(
-    (soma, item) => soma + item.valorUnitarioAplicado * item.quantidade,
-    0,
-  );
-  const valorManutencao = itens.reduce(
-    (soma, item) => soma + item.valorManutencaoAplicado * item.quantidade,
-    0,
+  const valorTotal = somarItens(itens);
+  const valorManutencao = somarItens(
+    itens.map((item) => ({
+      quantidade: item.quantidade,
+      valorUnitarioAplicado: item.valorManutencaoAplicado,
+    })),
   );
   return { valorTotal, valorManutencao };
 }
@@ -177,13 +178,17 @@ async function recalcularTotaisOrdemServico(ordemServicoId: string): Promise<voi
     .single();
   if (osError) throw osError;
 
-  const valorTotal = itens.reduce(
-    (soma, item) => soma + item.valor_unitario_aplicado * item.quantidade,
-    0,
+  const valorTotal = somarItens(
+    itens.map((item) => ({
+      quantidade: item.quantidade,
+      valorUnitarioAplicado: item.valor_unitario_aplicado,
+    })),
   );
-  const valorManutencao = itens.reduce(
-    (soma, item) => soma + item.valor_manutencao_aplicado * item.quantidade,
-    0,
+  const valorManutencao = somarItens(
+    itens.map((item) => ({
+      quantidade: item.quantidade,
+      valorUnitarioAplicado: item.valor_manutencao_aplicado,
+    })),
   );
   const valorFinal = valorTotal + valorManutencao - os.valor_desconto;
 

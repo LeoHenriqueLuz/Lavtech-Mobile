@@ -1,6 +1,6 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ClipboardList, UserPlus } from 'lucide-react-native';
+import { ClipboardList, FileText, UserPlus } from 'lucide-react-native';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
 import { useTheme } from '@/theme/theme-provider';
@@ -115,6 +115,14 @@ export default function DashboardScreen() {
                 </Text>
               </Card>
             </TouchableOpacity>
+            <TouchableOpacity style={styles.shortcutFlex} onPress={() => router.push('/propostas/novo')}>
+              <Card style={styles.shortcutCard}>
+                <FileText color={theme.colors.primary} size={20} />
+                <Text style={[theme.typography.caption, { color: theme.colors.text }]}>
+                  Nova Proposta
+                </Text>
+              </Card>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -160,10 +168,12 @@ const styles = StyleSheet.create({
   },
   shortcutsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   shortcutFlex: {
-    flex: 1,
+    flexBasis: '47%',
+    flexGrow: 1,
   },
   shortcutCard: {
     alignItems: 'center',
