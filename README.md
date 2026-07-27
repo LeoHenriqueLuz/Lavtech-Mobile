@@ -1,7 +1,8 @@
 # LavTech
 
-Aplicativo mobile **proprietário** de uso interno para gestão de clientes, persianas e
-ordens de serviço de uma empresa especializada em limpeza e manutenção de persianas.
+Aplicativo mobile **proprietário** de uso interno para gestão de clientes, persianas,
+propostas comerciais e ordens de serviço de uma empresa especializada em limpeza e
+manutenção de persianas.
 
 > Software proprietário — uso exclusivo interno. Não distribuir.
 
@@ -17,12 +18,16 @@ ordens de serviço de uma empresa especializada em limpeza e manutenção de per
 
 ## Funcionalidades
 
+- Login e cadastro de usuário (Supabase Auth), cadastro protegido por código de acesso
 - Cadastro de clientes com endereço (busca automática por CEP) e exclusão lógica
 - Cadastro de persianas por cliente (ambiente, tipo, quantidade), com listas fechadas de
   Ambiente e Tipo
 - Tabela de Preços por tipo de persiana, com histórico de preço vigente
+- Propostas Comerciais (`PROP-AAAA-000001`) para orçamento rápido sem cliente/persiana
+  cadastrados, com geração de PDF e conversão em Ordem de Serviço quando aceita
 - Ordens de Serviço com numeração automática (`OS-AAAA-000001`), cálculo automático de
   valores a partir da Tabela de Preços e ajuste manual por item (com motivo obrigatório)
+- Lembrete local (notificação push) de reinstalação agendada, 1 dia antes da previsão de entrega
 - Dashboard com indicadores de OS em aberto e faturamento do dia
 
 ## Pré-requisitos
@@ -84,11 +89,14 @@ npx supabase gen types typescript --linked > src\types\database.ts
 ## Estrutura do projeto
 
 ```
-app/                     Rotas (Expo Router)
+app/
+  (auth)/                Rotas de login e cadastro
+  (app)/                 Rotas autenticadas (Expo Router)
 src/
   components/            Componentes de UI reutilizáveis (Screen, Card, AppButton, ...)
-  features/               Lógica de negócio por domínio (clientes, persianas, tabela-precos,
-                          ordens-servico, catalogos, dashboard, configuracoes)
+  features/               Lógica de negócio por domínio (cadastro, clientes, persianas,
+                          tabela-precos, propostas, ordens-servico, catalogos, dashboard,
+                          configuracoes, empresa)
   theme/                  Tokens de design (cores, tipografia, espaçamento)
   lib/                    Configuração de clients externos (Supabase)
   types/                  Tipos gerados/compartilhados

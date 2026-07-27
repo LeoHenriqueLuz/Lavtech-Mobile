@@ -4,7 +4,7 @@
 
 **LavTech** é uma aplicação Mobile desenvolvida exclusivamente para uso interno da LavTech.
 
-O sistema centraliza o cadastro de clientes e persianas, a criação de Ordens de Serviço com cálculo automático de valores, a geração de PDF e o envio da Ordem de Serviço por WhatsApp, Foto de antes e Depois na retirada da persiana e recolocação, 
+O sistema centraliza o cadastro de clientes e persianas, a criação de Propostas Comerciais e Ordens de Serviço com cálculo automático de valores, a geração de PDF e o envio por WhatsApp, Foto de antes e Depois na retirada da persiana e recolocação, 
 
 O projeto será desenvolvido utilizando Claude Code como assistente de desenvolvimento.
 
@@ -17,9 +17,10 @@ O sistema permite:
 * Gerenciar clientes.(Cadastro, editar, excluir)
 * Tabela de Preços para Cadastro de persianas e seus valores.
 * Gerenciar persianas, vinculadas a cada cliente.
+* Criar Propostas Comerciais (orçamento rápido, sem exigir cliente/persiana cadastrados).
 * Gerenciar Ordens de Serviço, do registro até a finalização.
 * Calcular automaticamente os valores dos serviços a partir da Tabela de Preços.
-* Gerar Ordem de Serviço em PDF.
+* Gerar Ordem de Serviço e Proposta Comercial em PDF.
 * Enviar a Ordem de Serviço por WhatsApp para o Cliente, com o PDF anexado.
 
 ---
@@ -79,6 +80,35 @@ Funcionalidades:
 
 ---
 
+## Propostas Comerciais
+
+Orçamento rápido para o atendimento inicial (ex.: pelo WhatsApp), sem exigir cliente ou
+persiana já cadastrados.
+
+Cada proposta possui:
+
+* Número automático no formato `PROP-AAAA-000001`
+* Nome e WhatsApp do cliente (texto livre, opcional — não cria cadastro)
+* Itens (tipo de persiana, quantidade, valor unitário obtido da Tabela de Preços vigente,
+  com possibilidade de ajuste manual e motivo obrigatório)
+* Subtotal, desconto e valor final calculados automaticamente
+* Validade em dias (padrão 15, editável)
+* Observações (sugestão padrão: "Valores sujeitos à confirmação após visita técnica.")
+* Status: Rascunho, Enviada, Aceita, Recusada, Expirada (expirada é calculada pela data de
+  validade, não alterada no banco)
+
+Funcionalidades:
+
+* Geração de PDF, no mesmo padrão visual da Ordem de Serviço.
+* **Gerar OS**: com a proposta em status "Aceita", converte os dados em uma nova Ordem de
+  Serviço, aproveitando cliente e persianas já negociados.
+  * Se não existir cliente com o WhatsApp da proposta, a tela de cadastro de cliente abre
+    pré-preenchida antes de continuar.
+  * Se faltar alguma persiana do tipo da proposta para o cliente, a tela de detalhe do
+    cliente pede o Ambiente (único dado que a proposta não guarda) antes de seguir para a OS.
+
+---
+
 ## Tabela de Preços
 
 O sistema permite configurar preços por:
@@ -106,6 +136,16 @@ Funcionalidade implementada:
 * Todo envio (sucesso ou falha) é registrado no histórico de comunicação do cliente, vinculado à Ordem de Serviço.
 
 Limitação conhecida: em contas de WhatsApp Business em produção, mensagens iniciadas pela empresa só são entregues dentro da janela de 24h após o cliente ter mandado mensagem, ou por meio de um Message Template pré-aprovado pela Meta — isso deve ser implementado.
+
+---
+
+## Acesso ao Sistema
+
+Autenticação via Supabase Auth (e-mail/senha).
+
+* Login com e-mail e senha numérica de 6 dígitos.
+* Cadastro de novo usuário protegido por código de acesso (só quem tem o código da empresa
+  consegue criar uma conta).
 
 ---
 
@@ -190,15 +230,18 @@ Finalização
 
 # Convenções
 
-## Número da Ordem de Serviço
+## Número da Ordem de Serviço e da Proposta Comercial
 
 Formato:
 
-OS-AAAA-000001
+OS-AAAA-000001 / PROP-AAAA-000001
 
 Exemplo:
 
-OS-2026-000001
+OS-2026-000001 / PROP-2026-000001
+
+Numeração sequencial por ano, gerada automaticamente pelo banco (uma tabela de contador por
+ano para cada numeração).
 
 ---
 

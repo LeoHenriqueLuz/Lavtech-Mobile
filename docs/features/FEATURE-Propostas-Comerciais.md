@@ -230,9 +230,6 @@ Após gerar o PDF:
 Botão:
 
 Baixar PDF
-
-
-
 ---
 
 # Melhorias Futuras
