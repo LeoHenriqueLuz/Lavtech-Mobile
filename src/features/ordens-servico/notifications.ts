@@ -1,6 +1,5 @@
-import * as Notifications from 'expo-notifications';
 import { isAfter, parseISO, setHours, setMinutes, subDays } from 'date-fns';
-import { notificacoesPermitidas } from '@/lib/notifications';
+import { carregarNotifications, notificacoesPermitidas, suportaNotificacoes } from '@/lib/notifications';
 import type { OrdemServicoComCliente } from './api';
 
 /** Horário local em que o lembrete de reinstalação é disparado. */
@@ -32,6 +31,7 @@ export async function agendarLembreteReinstalacao(os: OrdemServicoParaLembrete):
   const dataLembrete = calcularDataLembrete(os.dataPrevisaoEntrega);
   if (!isAfter(dataLembrete, new Date())) return;
 
+  const Notifications = carregarNotifications();
   await Notifications.scheduleNotificationAsync({
     identifier: identificadorLembrete(os.id),
     content: {
@@ -46,18 +46,22 @@ export async function agendarLembreteReinstalacao(os: OrdemServicoParaLembrete):
 }
 
 export async function cancelarLembreteReinstalacao(ordemServicoId: string): Promise<void> {
+  if (!suportaNotificacoes) return;
+
   try {
-    await Notifications.cancelScheduledNotificationAsync(identificadorLembrete(ordemServicoId));
+    await carregarNotifications().cancelScheduledNotificationAsync(
+      identificadorLembrete(ordemServicoId),
+    );
   } catch {
     // Sem lembrete agendado para essa OS — nada a fazer.
   }
 }
 
-/** Garante que toda OS com status "Reinstalação Agendada" tenha um lembrete agendado neste dispositivo. */
+/** Garante que toda OS com status "Agendado" tenha um lembrete agendado neste dispositivo. */
 export async function sincronizarLembretesReinstalacao(
   ordens: OrdemServicoComCliente[],
 ): Promise<void> {
-  const emReinstalacao = ordens.filter((os) => os.status === 'Reinstalação Agendada');
+  const emReinstalacao = ordens.filter((os) => os.status === 'Agendado');
   for (const os of emReinstalacao) {
     await agendarLembreteReinstalacao({
       id: os.id,

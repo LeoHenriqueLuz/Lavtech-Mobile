@@ -12,7 +12,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
   const config = {
     'Retirada Agendada': { icon: Clock, color: theme.colors.warning },
-    'Reinstalação Agendada': { icon: RefreshCw, color: theme.colors.primary },
+    Agendado: { icon: RefreshCw, color: theme.colors.primary },
     Finalizado: { icon: CheckCircle2, color: theme.colors.success },
     Cancelado: { icon: XCircle, color: theme.colors.textMuted },
   }[status];

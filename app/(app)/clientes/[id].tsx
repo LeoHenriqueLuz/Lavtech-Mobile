@@ -1,20 +1,42 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/theme/theme-provider';
 import { ClienteForm } from '@/features/clientes/cliente-form';
 import { clienteToFormData } from '@/features/clientes/api';
 import type { ClienteFormData } from '@/features/clientes/schema';
 import { useCliente, useSetClienteAtivo, useUpdateCliente } from '@/features/clientes/hooks';
 import { PersianasSection } from '@/features/persianas/persianas-section';
+import { useProposta } from '@/features/propostas/hooks';
 import { Screen } from '@/components/screen';
 import { AppButton } from '@/components/app-button';
 
 export default function ClienteDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, propostaId } = useLocalSearchParams<{ id: string; propostaId?: string }>();
   const theme = useTheme();
+  const router = useRouter();
   const { data: cliente, isLoading } = useCliente(id);
+  const { data: propostaOrigem } = useProposta(propostaId ?? '');
   const updateCliente = useUpdateCliente(id);
   const setAtivo = useSetClienteAtivo(id);
+
+  const pendentesDaProposta = useMemo(
+    () =>
+      propostaOrigem?.itens.map((item) => ({
+        tipoId: item.tipo_persiana_id,
+        tipoNome: item.tipo?.nome ?? 'Tipo',
+        quantidade: item.quantidade,
+      })),
+    [propostaOrigem],
+  );
+
+  function handleContinuarParaOS() {
+    if (!propostaId) return;
+    router.replace({
+      pathname: '/ordens-servico/novo',
+      params: { propostaId, clienteId: id },
+    });
+  }
 
   async function handleSubmit(data: ClienteFormData) {
     try {
@@ -64,7 +86,12 @@ export default function ClienteDetailScreen() {
           onSubmit={handleSubmit}
           submitLabel="Salvar alterações"
         />
-        <PersianasSection clienteId={id} />
+        <PersianasSection
+          clienteId={id}
+          pendentesDaProposta={pendentesDaProposta}
+          propostaNumero={propostaOrigem?.numero}
+          onTodasPendentesCadastradas={handleContinuarParaOS}
+        />
         <View style={styles.footer}>
           <AppButton
             label={cliente.ativo ? 'Desativar cliente' : 'Reativar cliente'}

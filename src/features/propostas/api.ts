@@ -167,48 +167,6 @@ export async function updateItemValorProposta(
   return data;
 }
 
-export async function duplicateProposta(id: string): Promise<Proposta> {
-  const original = await getProposta(id);
-
-  const novaProposta = {
-    cliente_nome: original.cliente_nome,
-    cliente_whatsapp: original.cliente_whatsapp,
-    responsavel_id: original.responsavel_id,
-    valor_subtotal: original.valor_subtotal,
-    valor_desconto: original.valor_desconto,
-    valor_final: original.valor_final,
-    observacoes: original.observacoes,
-    validade_dias: original.validade_dias,
-    data_validade: calcularDataValidade(original.validade_dias),
-  } as unknown as Database['public']['Tables']['propostas_comerciais']['Insert'];
-
-  const { data: proposta, error } = await supabase
-    .from('propostas_comerciais')
-    .insert(novaProposta)
-    .select()
-    .single();
-  if (error) throw error;
-
-  const { error: itensError } = await supabase.from('propostas_comerciais_itens').insert(
-    original.itens.map((item) => ({
-      proposta_id: proposta.id,
-      tipo_persiana_id: item.tipo_persiana_id,
-      quantidade: item.quantidade,
-      valor_unitario_tabela: item.valor_unitario_tabela,
-      valor_unitario_aplicado: item.valor_unitario_aplicado,
-      ajuste_manual: item.ajuste_manual,
-      motivo_ajuste: item.motivo_ajuste,
-    })),
-  );
-
-  if (itensError) {
-    await supabase.from('propostas_comerciais').delete().eq('id', proposta.id);
-    throw itensError;
-  }
-
-  return proposta;
-}
-
 export async function deleteProposta(id: string): Promise<void> {
   const { error } = await supabase.from('propostas_comerciais').delete().eq('id', id);
   if (error) throw error;

@@ -60,16 +60,6 @@ export function useUpdateItemValorProposta(propostaId: string) {
   });
 }
 
-export function useDuplicateProposta() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.duplicateProposta(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['propostas'] });
-    },
-  });
-}
-
 export function useDeleteProposta() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -57,7 +57,8 @@ export default function OrdemServicoDetailScreen() {
           dialogTitle: `OS ${os.numero}`,
         });
       }
-    } catch {
+    } catch (error) {
+      console.error('Falha ao gerar/compartilhar PDF da OS:', error);
       Alert.alert('Erro', 'Não foi possível gerar o PDF.');
     } finally {
       setBaixandoPdf(false);
@@ -87,14 +88,14 @@ export default function OrdemServicoDetailScreen() {
           updateStatus
             .mutateAsync(proximo)
             .then(() => {
-              if (proximo === 'Reinstalação Agendada') {
+              if (proximo === 'Agendado') {
                 agendarLembreteReinstalacao({
                   id: os.id,
                   numero: os.numero,
                   clienteNome: os.cliente?.nome ?? 'Cliente',
                   dataPrevisaoEntrega: os.data_previsao_entrega,
                 });
-              } else if (statusAtual === 'Reinstalação Agendada') {
+              } else if (statusAtual === 'Agendado') {
                 cancelarLembreteReinstalacao(os.id);
               }
             })
@@ -121,7 +122,7 @@ export default function OrdemServicoDetailScreen() {
             updateStatus
               .mutateAsync('Cancelado')
               .then(() => {
-                if (statusAtual === 'Reinstalação Agendada') {
+                if (statusAtual === 'Agendado') {
                   cancelarLembreteReinstalacao(os.id);
                 }
               })

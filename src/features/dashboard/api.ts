@@ -20,7 +20,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     supabase
       .from('ordens_servico')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'Reinstalação Agendada'),
+      .eq('status', 'Agendado'),
     supabase
       .from('ordens_servico')
       .select('valor_final')

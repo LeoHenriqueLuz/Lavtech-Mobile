@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,19 +12,20 @@ import {
 } from 'react-native';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Calendar } from 'lucide-react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { maskDataBr } from '@/utils/format-date';
 import { CalendarPickerModal } from '@/components/calendar-picker-modal';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { useSession } from '@/hooks/use-session';
-import { useClientes } from '@/features/clientes/hooks';
+import { useCliente, useClientes } from '@/features/clientes/hooks';
 import type { Cliente } from '@/features/clientes/api';
 import { usePersianas } from '@/features/persianas/hooks';
 import { usePrecosVigentes } from '@/features/tabela-precos/hooks';
 import { useCreateOrdemServico, useOrdemAbertaDoCliente } from '@/features/ordens-servico/hooks';
 import type { ItemParaCriar } from '@/features/ordens-servico/api';
+import { useProposta } from '@/features/propostas/hooks';
 import {
   ordemServicoFormDefaultValues,
   ordemServicoFormSchema,
@@ -52,6 +53,10 @@ export default function NovaOrdemServicoScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { session } = useSession();
+  const { propostaId, clienteId } = useLocalSearchParams<{
+    propostaId?: string;
+    clienteId?: string;
+  }>();
 
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [buscaCliente, setBuscaCliente] = useState('');
@@ -68,7 +73,59 @@ export default function NovaOrdemServicoScreen() {
   );
   const { data: persianas, isLoading: carregandoPersianas } = usePersianas(cliente?.id ?? '');
   const { data: tiposComPreco } = usePrecosVigentes();
+  const { data: propostaOrigem } = useProposta(propostaId ?? '');
+  const { data: clienteDaProposta } = useCliente(clienteId ?? '');
+  const whatsappProposta = propostaOrigem?.cliente_whatsapp?.trim();
+  const { data: clientesComWhatsappProposta, isLoading: verificandoClienteProposta } = useClientes({
+    search: whatsappProposta || '__nenhum-cliente-corresponde__',
+  });
   const createOrdemServico = useCreateOrdemServico();
+
+  useEffect(() => {
+    if (clienteDaProposta && !cliente) {
+      setCliente(clienteDaProposta);
+    }
+  }, [clienteDaProposta, cliente]);
+
+  const clienteVerificadoRef = useRef(false);
+  useEffect(() => {
+    if (
+      !propostaOrigem ||
+      clienteId ||
+      cliente ||
+      verificandoClienteProposta ||
+      clienteVerificadoRef.current
+    ) {
+      return;
+    }
+    clienteVerificadoRef.current = true;
+
+    const correspondenciaExata = whatsappProposta
+      ? clientesComWhatsappProposta?.find((c) => c.whatsapp.trim() === whatsappProposta)
+      : undefined;
+
+    if (correspondenciaExata) {
+      setCliente(correspondenciaExata);
+      return;
+    }
+
+    router.replace({
+      pathname: '/clientes/novo',
+      params: {
+        propostaId: propostaOrigem.id,
+        nome: propostaOrigem.cliente_nome ?? '',
+        whatsapp: propostaOrigem.cliente_whatsapp ?? '',
+      },
+    });
+  }, [
+    propostaOrigem,
+    clienteId,
+    cliente,
+    verificandoClienteProposta,
+    clientesComWhatsappProposta,
+    whatsappProposta,
+    router,
+  ]);
 
   const precoPorTipoId = useMemo(() => {
     const mapa = new Map<string, { valor_unitario: number; valor_manutencao: number } | null>();
@@ -90,6 +147,59 @@ export default function NovaOrdemServicoScreen() {
   });
 
   const dataPrevisaoEntrega = watch('dataPrevisaoEntrega');
+
+  const formPreenchidoDaPropostaRef = useRef(false);
+  useEffect(() => {
+    if (!propostaOrigem || formPreenchidoDaPropostaRef.current) return;
+    formPreenchidoDaPropostaRef.current = true;
+    if (propostaOrigem.valor_desconto > 0) {
+      setValue('desconto', String(propostaOrigem.valor_desconto).replace('.', ','));
+    }
+  }, [propostaOrigem, setValue]);
+
+  useEffect(() => {
+    if (!propostaOrigem || !cliente || !persianas) return;
+
+    const tiposExistentes = new Set(persianas.map((p) => p.tipo_id));
+    const faltaAlgumaPersiana = propostaOrigem.itens.some(
+      (item) => !tiposExistentes.has(item.tipo_persiana_id),
+    );
+    if (faltaAlgumaPersiana) {
+      router.replace({
+        pathname: `/clientes/${cliente.id}`,
+        params: { propostaId: propostaOrigem.id },
+      });
+    }
+  }, [propostaOrigem, cliente, persianas, router]);
+
+  useEffect(() => {
+    if (!propostaOrigem || !persianas) return;
+
+    const itemPropostaPorTipoId = new Map(
+      propostaOrigem.itens.map((item) => [item.tipo_persiana_id, item]),
+    );
+    setItens((prev) => {
+      let mudou = false;
+      const proximo = { ...prev };
+      persianas.forEach((persiana) => {
+        if (proximo[persiana.id]) return;
+        const itemProposta = itemPropostaPorTipoId.get(persiana.tipo_id);
+        const precoVigente = precoPorTipoId.get(persiana.tipo_id);
+        if (!itemProposta || !precoVigente) return;
+        mudou = true;
+        proximo[persiana.id] = {
+          selecionada: true,
+          quantidade: String(persiana.quantidade),
+          valorTabela: precoVigente.valor_unitario,
+          valorAplicado: itemProposta.valor_unitario_aplicado,
+          valorManutencao: precoVigente.valor_manutencao,
+          ajusteManual: itemProposta.ajuste_manual,
+          motivoAjuste: itemProposta.motivo_ajuste,
+        };
+      });
+      return mudou ? proximo : prev;
+    });
+  }, [propostaOrigem, persianas, precoPorTipoId]);
 
   function handleSelecionarDataPrevisao(dataBr: string) {
     setValue('dataPrevisaoEntrega', dataBr, { shouldValidate: true });
@@ -185,6 +295,14 @@ export default function NovaOrdemServicoScreen() {
   }
 
   const itemEditando = editandoValorId ? itens[editandoValorId] : null;
+
+  if ((propostaId || clienteId) && !cliente) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator color={theme.colors.primary} />
+      </View>
+    );
+  }
 
   if (!cliente) {
     return (

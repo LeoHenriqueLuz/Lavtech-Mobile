@@ -6,7 +6,6 @@ import * as Sharing from 'expo-sharing';
 import { useTheme } from '@/theme/theme-provider';
 import {
   useDeleteProposta,
-  useDuplicateProposta,
   useProposta,
   useUpdateItemValorProposta,
   useUpdateStatusProposta,
@@ -34,7 +33,6 @@ export default function PropostaDetailScreen() {
   const { data: empresa } = useConfiguracoesEmpresa();
   const updateStatus = useUpdateStatusProposta(id);
   const updateItemValor = useUpdateItemValorProposta(id);
-  const duplicateProposta = useDuplicateProposta();
   const deleteProposta = useDeleteProposta();
 
   async function handleBaixarPdf() {
@@ -88,12 +86,9 @@ export default function PropostaDetailScreen() {
     ]);
   }
 
-  function handleDuplicar() {
+  function handleGerarOS() {
     if (!proposta) return;
-    duplicateProposta.mutateAsync(proposta.id).then(
-      (nova) => router.replace(`/propostas/${nova.id}`),
-      () => Alert.alert('Erro', 'Não foi possível duplicar a proposta.'),
-    );
+    router.push({ pathname: '/ordens-servico/novo', params: { propostaId: proposta.id } });
   }
 
   function handleExcluir() {
@@ -205,7 +200,9 @@ export default function PropostaDetailScreen() {
           </View>
         ) : null}
 
-        <AppButton label="Duplicar Proposta" onPress={handleDuplicar} variant="secondary" />
+        {statusEfetivo === 'Aceita' ? (
+          <AppButton label="Gerar OS" onPress={handleGerarOS} variant="secondary" />
+        ) : null}
 
         <AppButton label="Excluir Proposta" onPress={handleExcluir} variant="danger" />
       </View>

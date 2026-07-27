@@ -1,18 +1,30 @@
-import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+/** No Expo Go (Android), o SDK 53+ removeu a API de notificações — o próprio import do módulo lança erro, então ele só pode ser carregado em development build. */
+export const suportaNotificacoes =
+  Platform.OS !== 'web' && Constants.executionEnvironment !== ExecutionEnvironment.StoreClient;
 
-/** Cria o canal padrão no Android e pede permissão de notificações, se ainda não decidido. Notificações locais não são suportadas no web. */
+export function carregarNotifications(): typeof import('expo-notifications') {
+  return require('expo-notifications');
+}
+
+if (suportaNotificacoes) {
+  carregarNotifications().setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+}
+
+/** Cria o canal padrão no Android e pede permissão de notificações, se ainda não decidido. */
 export async function configurarNotificacoes(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (!suportaNotificacoes) return;
+
+  const Notifications = carregarNotifications();
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -28,8 +40,8 @@ export async function configurarNotificacoes(): Promise<void> {
 }
 
 export async function notificacoesPermitidas(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (!suportaNotificacoes) return false;
 
-  const { status } = await Notifications.getPermissionsAsync();
+  const { status } = await carregarNotifications().getPermissionsAsync();
   return status === 'granted';
 }

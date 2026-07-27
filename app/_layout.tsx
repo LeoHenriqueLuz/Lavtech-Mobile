@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { LogBox, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -19,6 +19,9 @@ import { defaultColors } from '@/theme/tokens';
 import { SessionProvider, useSession } from '@/hooks/use-session';
 
 SplashScreen.preventAutoHideAsync();
+
+/** A lib moti re-exporta o SafeAreaView deprecado do react-native mesmo sem usarmos esse componente; nosso código já usa react-native-safe-area-context. */
+LogBox.ignoreLogs(['SafeAreaView has been deprecated']);
 
 /** Só esconde a splash quando fontes e sessão inicial já estiverem prontas, evitando um flash de tela em branco. */
 function SplashGate({ fontsLoaded }: { fontsLoaded: boolean }) {

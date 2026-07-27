@@ -67,7 +67,7 @@ Cada Ordem de Serviço possui:
 * Status
 * Observações
 
-Status possíveis: Retirada Agendada, Reinstalação Agendada, Finalizado, Cancelado.
+Status possíveis: Retirada Agendada, Agendado, Finalizado, Cancelado.
 
 Funcionalidades:
 

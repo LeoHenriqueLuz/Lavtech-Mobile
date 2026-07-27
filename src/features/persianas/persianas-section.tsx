@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme/theme-provider';
 import { useCreatePersiana, usePersianas, useSetPersianaAtivo, useUpdatePersiana } from './hooks';
@@ -6,20 +6,47 @@ import { persianaFormDefaultValues, type PersianaFormData } from './schema';
 import { persianaToFormData, type PersianaComNomes } from './api';
 import { PersianaForm } from './persiana-form';
 import { PersianaListItem } from './persiana-list-item';
+import { AppButton } from '@/components/app-button';
+import { Card } from '@/components/card';
+
+export interface PersianaPendenteDaProposta {
+  tipoId: string;
+  tipoNome: string;
+  quantidade: number;
+}
 
 interface PersianasSectionProps {
   clienteId: string;
+  pendentesDaProposta?: PersianaPendenteDaProposta[];
+  propostaNumero?: string;
+  onTodasPendentesCadastradas?: () => void;
 }
 
-export function PersianasSection({ clienteId }: PersianasSectionProps) {
+export function PersianasSection({
+  clienteId,
+  pendentesDaProposta,
+  propostaNumero,
+  onTodasPendentesCadastradas = () => {},
+}: PersianasSectionProps) {
   const theme = useTheme();
   const [addingNew, setAddingNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [puladosIds, setPuladosIds] = useState<string[]>([]);
 
   const { data: persianas, isLoading, error } = usePersianas(clienteId, true);
   const createPersiana = useCreatePersiana(clienteId);
   const updatePersiana = useUpdatePersiana(clienteId, editingId ?? '');
   const setAtivo = useSetPersianaAtivo(clienteId);
+
+  const pendentesRestantes = useMemo(() => {
+    const tiposExistentes = new Set((persianas ?? []).map((p) => p.tipo_id));
+    return (pendentesDaProposta ?? []).filter(
+      (item) => !tiposExistentes.has(item.tipoId) && !puladosIds.includes(item.tipoId),
+    );
+  }, [persianas, pendentesDaProposta, puladosIds]);
+
+  const proximaPendente = pendentesRestantes[0];
+  const todasPendentesResolvidas = Boolean(pendentesDaProposta?.length) && pendentesRestantes.length === 0;
 
   async function handleCreate(data: PersianaFormData) {
     try {
@@ -66,7 +93,7 @@ export function PersianasSection({ clienteId }: PersianasSectionProps) {
     <View style={[styles.container, { padding: theme.spacing.md, gap: theme.spacing.sm }]}>
       <View style={styles.header}>
         <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>Persianas</Text>
-        {!addingNew && !editingId ? (
+        {!addingNew && !editingId && !proximaPendente ? (
           <TouchableOpacity onPress={() => setAddingNew(true)}>
             <Text style={[theme.typography.body, { color: theme.colors.primary, fontWeight: '600' }]}>
               + Adicionar
@@ -74,6 +101,33 @@ export function PersianasSection({ clienteId }: PersianasSectionProps) {
           </TouchableOpacity>
         ) : null}
       </View>
+
+      {proximaPendente ? (
+        <Card style={styles.propostaCard}>
+          <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+            Informe o ambiente de "{proximaPendente.tipoNome}" (qtd. {proximaPendente.quantidade}) da
+            proposta {propostaNumero} para continuar.
+          </Text>
+          <PersianaForm
+            key={proximaPendente.tipoId}
+            defaultValues={{
+              ...persianaFormDefaultValues,
+              tipoId: proximaPendente.tipoId,
+              quantidade: String(proximaPendente.quantidade),
+            }}
+            onSubmit={handleCreate}
+            onCancel={() => setPuladosIds((prev) => [...prev, proximaPendente.tipoId])}
+            submitLabel="Adicionar"
+          />
+        </Card>
+      ) : todasPendentesResolvidas ? (
+        <Card style={styles.propostaCard}>
+          <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+            Persianas da proposta {propostaNumero} prontas.
+          </Text>
+          <AppButton label="Continuar para Nova Ordem de Serviço" onPress={onTodasPendentesCadastradas} />
+        </Card>
+      ) : null}
 
       {addingNew ? (
         <PersianaForm
@@ -136,6 +190,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  propostaCard: {
+    gap: 12,
   },
   list: {
     gap: 8,
