@@ -1,10 +1,11 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ClipboardList, FileText, UserPlus } from 'lucide-react-native';
+import { Bell, ClipboardList, FileText, UserPlus } from 'lucide-react-native';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
 import { useTheme } from '@/theme/theme-provider';
 import { useDashboardMetrics, useOrdensEmAberto } from '@/features/dashboard/hooks';
+import { useLembretesCount } from '@/features/lembretes/hooks';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import type { StatusOS } from '@/features/ordens-servico/status';
 import { formatCurrency } from '@/utils/format-currency';
@@ -14,6 +15,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { data: metrics } = useDashboardMetrics();
   const { data: ordensEmAberto, isLoading: carregandoOrdens } = useOrdensEmAberto(5);
+  const { data: lembretesCount } = useLembretesCount();
 
   return (
     <Screen padded={false}>
@@ -48,6 +50,24 @@ export default function DashboardScreen() {
             </Text>
           </Card>
         </View>
+
+        <TouchableOpacity onPress={() => router.push('/lembretes')}>
+          <Card style={styles.lembretesCard}>
+            <View style={styles.lembretesHeader}>
+              <Bell color={theme.colors.warning} size={18} />
+              <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+                Lembretes
+              </Text>
+            </View>
+            <Text style={[theme.typography.body, { color: theme.colors.textMuted }]}>
+              {lembretesCount === undefined
+                ? '—'
+                : lembretesCount === 0
+                  ? 'Nenhum lembrete pendente.'
+                  : `${lembretesCount} ${lembretesCount === 1 ? 'cliente aguardando' : 'clientes aguardando'} contato.`}
+            </Text>
+          </Card>
+        </TouchableOpacity>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -145,6 +165,14 @@ const styles = StyleSheet.create({
   },
   metricValue: {
     fontSize: 20,
+  },
+  lembretesCard: {
+    gap: 4,
+  },
+  lembretesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   section: {
     gap: 12,

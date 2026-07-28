@@ -95,27 +95,33 @@ export type Database = {
           cliente_id: string
           enviado_em: string
           id: string
+          mensagem: string | null
           mensagem_erro: string | null
           ordem_servico_id: string | null
           status: string
+          tipo: string
         }
         Insert: {
           canal?: string
           cliente_id: string
           enviado_em?: string
           id?: string
+          mensagem?: string | null
           mensagem_erro?: string | null
           ordem_servico_id?: string | null
           status: string
+          tipo: string
         }
         Update: {
           canal?: string
           cliente_id?: string
           enviado_em?: string
           id?: string
+          mensagem?: string | null
           mensagem_erro?: string | null
           ordem_servico_id?: string | null
           status?: string
+          tipo?: string
         }
         Relationships: [
           {
