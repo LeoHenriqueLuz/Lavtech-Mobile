@@ -1,3 +1,4 @@
+import { addDays, format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import type { OrdemServicoComCliente } from '@/features/ordens-servico/api';
 
@@ -52,6 +53,17 @@ export async function getOrdensEmAberto(limit: number): Promise<OrdemServicoComC
     .neq('status', 'Cancelado')
     .order('created_at', { ascending: false })
     .limit(limit);
+  if (error) throw error;
+  return data;
+}
+
+export async function getEntregasAmanha(): Promise<OrdemServicoComCliente[]> {
+  const amanha = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .select('*, cliente:clientes(nome)')
+    .eq('status', 'Agendado')
+    .eq('data_previsao_entrega', amanha);
   if (error) throw error;
   return data;
 }

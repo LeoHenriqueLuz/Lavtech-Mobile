@@ -1,0 +1,70 @@
+# Feature: Lembrete de Entrega
+
+## Objetivo
+
+Implementar um lembrete simples para informar ao usuário quando existir uma Ordem de Serviço com instalação agendada para o dia seguinte.
+
+Esta funcionalidade serve apenas para lembrar o usuário da agenda do próximo dia.
+
+Não deverá enviar mensagens ao cliente.
+
+Não deverá criar notificações push.
+
+Não deverá criar um módulo específico.
+
+---
+
+# Funcionamento
+
+Sempre que o aplicativo for aberto ou o Dashboard for carregado, o sistema deverá verificar se existem Ordens de Serviço com:
+
+- Status: Reinstalação Agendada
+- Data da reinstalação igual ao dia seguinte.
+
+---
+
+# Dashboard
+
+Caso existam entregas agendadas para amanhã, exibir um card de aviso.
+
+Exemplo:
+
+────────────────────────────
+
+📦 Entrega Agendada
+
+João Silva está agendado para amanhã.
+
+Programe-se para chegar ao local no horário marcado.
+
+[Ver Ordem de Serviço]
+
+────────────────────────────
+
+Caso existam várias entregas, exibir um card para cada Ordem de Serviço.
+
+---
+
+# Botão
+
+Ao clicar em **Ver Ordem de Serviço**, abrir os detalhes da Ordem de Serviço correspondente.
+
+---
+
+# Regras
+
+Exibir apenas Ordens de Serviço que atendam aos critérios:
+
+- Status = Agendado
+- Data da reinstalação = amanhã
+
+Não exibir:
+
+- Ordens Finalizadas
+- Ordens Canceladas
+
+---
+
+# Objetivo Final
+
+Ao abrir o aplicativo, o usuário deverá visualizar imediatamente quais clientes possuem entrega agendada para o dia seguinte, permitindo organizar sua agenda antes de iniciar o trabalho.

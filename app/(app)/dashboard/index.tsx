@@ -1,10 +1,11 @@
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Bell, ClipboardList, FileText, UserPlus } from 'lucide-react-native';
+import { Bell, ClipboardList, FileText, Package, UserPlus } from 'lucide-react-native';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
+import { AppButton } from '@/components/app-button';
 import { useTheme } from '@/theme/theme-provider';
-import { useDashboardMetrics, useOrdensEmAberto } from '@/features/dashboard/hooks';
+import { useDashboardMetrics, useEntregasAmanha, useOrdensEmAberto } from '@/features/dashboard/hooks';
 import { useLembretesCount } from '@/features/lembretes/hooks';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import type { StatusOS } from '@/features/ordens-servico/status';
@@ -16,6 +17,7 @@ export default function DashboardScreen() {
   const { data: metrics } = useDashboardMetrics();
   const { data: ordensEmAberto, isLoading: carregandoOrdens } = useOrdensEmAberto(5);
   const { data: lembretesCount } = useLembretesCount();
+  const { data: entregasAmanha } = useEntregasAmanha();
 
   return (
     <Screen padded={false}>
@@ -68,6 +70,32 @@ export default function DashboardScreen() {
             </Text>
           </Card>
         </TouchableOpacity>
+
+        {entregasAmanha && entregasAmanha.length > 0 && (
+          <View style={styles.entregasList}>
+            {entregasAmanha.map((os) => (
+              <Card key={os.id} style={styles.entregaCard}>
+                <View style={styles.entregaHeader}>
+                  <Package color={theme.colors.primary} size={18} />
+                  <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+                    Entrega Agendada
+                  </Text>
+                </View>
+                <Text style={[theme.typography.body, { color: theme.colors.text }]}>
+                  {os.cliente?.nome ?? 'Cliente removido'} está agendado para amanhã.
+                </Text>
+                <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+                  Programe-se para chegar ao local no horário marcado.
+                </Text>
+                <AppButton
+                  label="Ver Ordem de Serviço"
+                  variant="secondary"
+                  onPress={() => router.push(`/ordens-servico/${os.id}`)}
+                />
+              </Card>
+            ))}
+          </View>
+        )}
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -170,6 +198,17 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   lembretesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  entregasList: {
+    gap: 12,
+  },
+  entregaCard: {
+    gap: 8,
+  },
+  entregaHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,

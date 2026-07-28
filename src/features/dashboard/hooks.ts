@@ -14,3 +14,10 @@ export function useOrdensEmAberto(limit = 5) {
     queryFn: () => api.getOrdensEmAberto(limit),
   });
 }
+
+export function useEntregasAmanha() {
+  return useQuery({
+    queryKey: ['dashboard-entregas-amanha'],
+    queryFn: () => api.getEntregasAmanha(),
+  });
+}
