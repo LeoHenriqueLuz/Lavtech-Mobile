@@ -21,3 +21,10 @@ export function useEntregasAmanha() {
     queryFn: () => api.getEntregasAmanha(),
   });
 }
+
+export function useFaturamentoPorPeriodo(meses: number) {
+  return useQuery({
+    queryKey: ['dashboard-faturamento', meses],
+    queryFn: () => api.getFaturamentoPorPeriodo(meses),
+  });
+}

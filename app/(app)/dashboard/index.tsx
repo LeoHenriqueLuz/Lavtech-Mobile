@@ -1,11 +1,27 @@
+import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Bell, ClipboardList, FileText, Package, UserPlus } from 'lucide-react-native';
+import { Picker } from '@react-native-picker/picker';
+import {
+  Bell,
+  Calendar,
+  ClipboardList,
+  FileText,
+  Package,
+  TrendingUp,
+  UserPlus,
+} from 'lucide-react-native';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/card';
 import { AppButton } from '@/components/app-button';
+import { BarChart } from '@/components/bar-chart';
 import { useTheme } from '@/theme/theme-provider';
-import { useDashboardMetrics, useEntregasAmanha, useOrdensEmAberto } from '@/features/dashboard/hooks';
+import {
+  useDashboardMetrics,
+  useEntregasAmanha,
+  useFaturamentoPorPeriodo,
+  useOrdensEmAberto,
+} from '@/features/dashboard/hooks';
 import { useLembretesCount } from '@/features/lembretes/hooks';
 import { StatusBadge } from '@/features/ordens-servico/status-badge';
 import type { StatusOS } from '@/features/ordens-servico/status';
@@ -14,10 +30,18 @@ import { formatCurrency } from '@/utils/format-currency';
 export default function DashboardScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const [periodoMeses, setPeriodoMeses] = useState(6);
   const { data: metrics } = useDashboardMetrics();
   const { data: ordensEmAberto, isLoading: carregandoOrdens } = useOrdensEmAberto(5);
   const { data: lembretesCount } = useLembretesCount();
   const { data: entregasAmanha } = useEntregasAmanha();
+  const { data: faturamentoPeriodo } = useFaturamentoPorPeriodo(periodoMeses);
+
+  const totalPeriodo = faturamentoPeriodo?.reduce((soma, item) => soma + item.total, 0) ?? 0;
+  const faixaDatas =
+    faturamentoPeriodo && faturamentoPeriodo.length > 0
+      ? `${faturamentoPeriodo[0].label} ${faturamentoPeriodo[0].mes.slice(0, 4)} - ${faturamentoPeriodo[faturamentoPeriodo.length - 1].label} ${faturamentoPeriodo[faturamentoPeriodo.length - 1].mes.slice(0, 4)}`
+      : '';
 
   return (
     <Screen padded={false}>
@@ -96,6 +120,60 @@ export default function DashboardScreen() {
             ))}
           </View>
         )}
+
+        <Card style={styles.faturamentoCard}>
+          <View style={styles.faturamentoHeader}>
+            <View style={styles.faturamentoTitulo}>
+              <TrendingUp color={theme.colors.success} size={18} />
+              <Text style={[theme.typography.subtitle, { color: theme.colors.text }]}>
+                Faturamento ({periodoMeses} meses)
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.periodoPicker,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.surface,
+                  borderRadius: theme.radii.full,
+                },
+              ]}
+            >
+              <Picker
+                selectedValue={periodoMeses}
+                onValueChange={(value) => setPeriodoMeses(Number(value))}
+                style={{ color: theme.colors.text }}
+                dropdownIconColor={theme.colors.textMuted}
+                mode="dropdown"
+              >
+                <Picker.Item label="3 meses" value={3} />
+                <Picker.Item label="6 meses" value={6} />
+                <Picker.Item label="12 meses" value={12} />
+              </Picker>
+            </View>
+          </View>
+
+          <Text style={[theme.typography.title, { color: theme.colors.success }]}>
+            {formatCurrency(totalPeriodo)}
+          </Text>
+          <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+            Total no período
+          </Text>
+
+          <BarChart
+            data={(faturamentoPeriodo ?? []).map((item) => ({
+              label: item.label,
+              value: item.total,
+            }))}
+          />
+
+          <View style={styles.faturamentoRodape}>
+            <Calendar color={theme.colors.textMuted} size={14} />
+            <Text style={[theme.typography.caption, { color: theme.colors.textMuted }]}>
+              {faixaDatas}
+            </Text>
+          </View>
+        </Card>
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -212,6 +290,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  faturamentoCard: {
+    gap: 8,
+  },
+  faturamentoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  faturamentoTitulo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  periodoPicker: {
+    borderWidth: 1,
+    overflow: 'hidden',
+    width: 130,
+    height: 36,
+    justifyContent: 'center',
+  },
+  faturamentoRodape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
   },
   section: {
     gap: 12,
